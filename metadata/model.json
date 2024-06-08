@@ -1,0 +1,30 @@
+{
+    "model_id": "string",
+    "name": "string",
+    "description": "string",
+    "created_at": "timestamp",
+    "last_modified": "timestamp",
+    "owner": "user_id",
+    "project_id": "project_id", // optional: if the model is part of a project
+    "version": "string",
+    "status": "string",  // e.g., "deployed", "inactive"
+    "tags": ["string"], // optional: list of tags related to the model
+    "hyperparameters": { // optional: hyperparameters used to train the model (maybe make more extensible)
+      "learning_rate": "number",
+      "batch_size": "number",
+      "epochs": "number",
+      "optimizer": "string"
+    },
+    "performance_metrics": { // optional: performance metrics of the model (maybe make more extensible)
+      "accuracy": "number",
+      "precision": "number",
+      "recall": "number",
+      "f1_score": "number"
+    },
+    "deployment": { // optional: deployment information of the model
+      "deployed": "boolean",
+      "deployment_date": "timestamp",
+      "deployment_platform": "string",  // e.g., "UbiOps"
+      "endpoint_url": "string"
+    }
+  }

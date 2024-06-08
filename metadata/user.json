@@ -1,0 +1,26 @@
+{
+    "user_id": "string",
+    "username": "string",
+    "email": "string",
+    "role": "string", // e.g., "researcher", "admin"
+    "created_at": "timestamp",
+    "last_login": "timestamp",
+    "profile": {
+        "first_name": "string",
+        "last_name": "string", // including middle name?
+        "institution": "string", // To allow for multiple institutions, this could be an array of strings (international collaboration)
+        "department": "string",
+        "research_interests": [
+            "string"
+        ],
+        "publications": [
+            "string"
+        ],
+        "profile_picture_url": "string"
+    },
+    "settings": {
+        "language": "string", // e.g. "dutch", "english"
+        "notifications_enabled": "boolean",
+        "theme": "string" // e.g., "light", "dark"
+    }
+}
