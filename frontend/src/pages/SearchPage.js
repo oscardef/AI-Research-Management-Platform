@@ -1,48 +1,90 @@
-import React, { useState } from 'react';
-import { TextField, Button, Container, Box, IconButton } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, TextField, IconButton, Button, Menu, MenuItem, Checkbox, FormControlLabel, Typography } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import supabase from '../supabaseClient';
+import { supabase } from '../supabaseClient';
+import axios from 'axios';
+import ProfileResult from '../components/ProfileResult';
+import ModelResult from '../components/ModelResult';
+import ResearchProjectResult from '../components/ResearchProjectResult';
+import PublicationResult from '../components/PublicationResult';
 
-function SearchPage() {
+const SearchPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [results, setResults] = useState([]);
+  const [profileResults, setProfileResults] = useState([]);
+  const [modelResults, setModelResults] = useState([]);
+  const [researchProjectResults, setResearchProjectResults] = useState([]);
+  const [publicationResults, setPublicationResults] = useState([]);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [filters, setFilters] = useState({
+    profiles: true,
+    models: true,
+    researchProjects: true,
+    publications: true,
+  });
 
   const handleSearch = async () => {
-    console.log('Fetching data from Supabase...');
-    const searchTermLower = `%${searchTerm.toLowerCase()}%`;
-
+    console.log('Fetching data from Supabase and external APIs...');
     try {
-      const { data: users, error: usersError } = await supabase
-        .from('users')
-        .select('*')
-        .ilike('username', searchTermLower);
+      const promises = [];
 
-      const { data: researchProjects, error: researchProjectsError } = await supabase
-        .from('research_projects')
-        .select('*')
-        .ilike('title', searchTermLower);
+      if (filters.profiles) {
+        promises.push(
+          supabase
+            .from('profiles')
+            .select('*')
+            .ilike('first_name', `%${searchTerm}%`)
+            .ilike('last_name', `%${searchTerm}%`)
+        );
+      }
+      if (filters.models) {
+        promises.push(
+          supabase
+            .from('models')
+            .select('*')
+            .ilike('name', `%${searchTerm}%`)
+        );
+      }
+      if (filters.researchProjects) {
+        promises.push(
+          supabase
+            .from('research_projects')
+            .select('*')
+            .ilike('title', `%${searchTerm}%`)
+        );
+      }
+      if (filters.publications) {
+        promises.push(
+          axios.get(`https://api.crossref.org/works?query=${searchTerm}`)
+            .then(response => response.data.message.items.map(item => ({
+              title: item.title[0],
+              author: item.author ? item.author.map(a => a.family).join(', ') : 'Unknown Author',
+              journal: item['container-title'] ? item['container-title'][0] : 'Unknown Journal',
+              url: item.URL
+            })))
+        );
+      }
 
-      const { data: models, error: modelsError } = await supabase
-        .from('models')
-        .select('*')
-        .ilike('name', searchTermLower); // Make sure 'name' is the correct column name
+      const results = await Promise.all(promises);
 
-      const { data: logs, error: logsError } = await supabase
-        .from('logs')
-        .select('*')
-        .ilike('message', searchTermLower);
+      const profileResults = results[0]?.data || [];
+      const modelResults = results[1]?.data || [];
+      const researchProjectResults = results[2]?.data || [];
+      const publicationResults = results[3] || [];
 
-      if (usersError) throw usersError;
-      if (researchProjectsError) throw researchProjectsError;
-      if (modelsError) throw modelsError;
-      if (logsError) throw logsError;
+      setProfileResults(profileResults);
+      setModelResults(modelResults);
+      setResearchProjectResults(researchProjectResults);
+      setPublicationResults(publicationResults);
 
-      setResults([...users, ...researchProjects, ...models, ...logs]);
-      console.log('Data fetched:', [...users, ...researchProjects, ...models, ...logs]);
+      console.log('Data fetched:', { profileResults, modelResults, researchProjectResults, publicationResults });
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
+
+  useEffect(() => {
+    handleSearch();
+  }, [filters]);
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
@@ -50,37 +92,139 @@ function SearchPage() {
     }
   };
 
+  const handleFilterMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleFilterMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleFilterChange = (event) => {
+    setFilters({
+      ...filters,
+      [event.target.name]: event.target.checked,
+    });
+  };
+
   return (
-    <Container>
-      <Box display="flex" justifyContent="center" alignItems="center" mt={4}>
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <TextField
           label="Search"
           variant="outlined"
+          fullWidth
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyPress={handleKeyPress}
         />
-        <IconButton onClick={handleSearch} color="primary">
+        <IconButton onClick={handleSearch}>
           <SearchIcon />
         </IconButton>
-        <Button variant="contained" color="primary" onClick={handleSearch} style={{ marginLeft: '10px' }}>
+        <Button
+          aria-controls="filter-menu"
+          aria-haspopup="true"
+          onClick={handleFilterMenuClick}
+          variant="contained"
+        >
           Filter By
         </Button>
+        <Menu
+          id="filter-menu"
+          anchorEl={anchorEl}
+          keepMounted
+          open={Boolean(anchorEl)}
+          onClose={handleFilterMenuClose}
+        >
+          <MenuItem>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={filters.profiles}
+                  onChange={handleFilterChange}
+                  name="profiles"
+                />
+              }
+              label="Profiles"
+            />
+          </MenuItem>
+          <MenuItem>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={filters.models}
+                  onChange={handleFilterChange}
+                  name="models"
+                />
+              }
+              label="Models"
+            />
+          </MenuItem>
+          <MenuItem>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={filters.researchProjects}
+                  onChange={handleFilterChange}
+                  name="researchProjects"
+                />
+              }
+              label="Research Projects"
+            />
+          </MenuItem>
+          <MenuItem>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={filters.publications}
+                  onChange={handleFilterChange}
+                  name="publications"
+                />
+              }
+              label="Publications"
+            />
+          </MenuItem>
+        </Menu>
       </Box>
-      <Box mt={4}>
-        {results.length > 0 && (
-          <div>
-            <h2>Search Results:</h2>
-            <ul>
-              {results.map((result, index) => (
-                <li key={index}>{JSON.stringify(result)}</li>
-              ))}
-            </ul>
-          </div>
+      <Box sx={{ mt: 2 }}>
+        {profileResults.length > 0 && (
+          <Box>
+            <Typography variant="h6">Profiles</Typography>
+            {profileResults.map((profile, index) => (
+              <ProfileResult key={index} profile={profile} />
+            ))}
+          </Box>
+        )}
+        {modelResults.length > 0 && (
+          <Box>
+            <Typography variant="h6">Models</Typography>
+            {modelResults.map((model, index) => (
+              <ModelResult key={index} model={model} />
+            ))}
+          </Box>
+        )}
+        {researchProjectResults.length > 0 && (
+          <Box>
+            <Typography variant="h6">Research Projects</Typography>
+            {researchProjectResults.map((project, index) => (
+              <ResearchProjectResult key={index} project={project} />
+            ))}
+          </Box>
+        )}
+        {publicationResults.length > 0 && (
+          <Box>
+            <Typography variant="h6">Publications</Typography>
+            {publicationResults.map((publication, index) => (
+              <PublicationResult key={index} publication={publication} />
+            ))}
+          </Box>
+        )}
+        {profileResults.length === 0 && modelResults.length === 0 && researchProjectResults.length === 0 && publicationResults.length === 0 && (
+          <Typography>No results found</Typography>
         )}
       </Box>
-    </Container>
+    </Box>
   );
-}
+};
 
 export default SearchPage;
