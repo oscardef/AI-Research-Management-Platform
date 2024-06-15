@@ -10,7 +10,18 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+env_path = Path(".") / ".env"
+load_dotenv(dotenv_path=env_path)
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -83,16 +94,21 @@ WSGI_APPLICATION = "backend.wsgi.application"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "ai_rmp_db",
-        "USER": "admin",
-        "PASSWORD": "admin",
-        "HOST": "db",
-        "PORT": "5432",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv("SUPABASE_DB_NAME"),
+        'USER': os.getenv("SUPABASE_DB_USER"),
+        'PASSWORD': os.getenv("SUPABASE_DB_PASSWORD"),
+        'HOST': os.getenv("SUPABASE_DB_HOST"),
+        'PORT': '5432',
     }
 }
 
+# Ensure you have the following environment variables set in your .env file:
+# SUPABASE_DB_NAME=<your-database-name>
+# SUPABASE_DB_USER=<your-database-user>
+# SUPABASE_DB_PASSWORD=<your-database-password>
+# SUPABASE_DB_HOST=<your-database-host>
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
