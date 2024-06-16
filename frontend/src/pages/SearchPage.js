@@ -23,6 +23,10 @@ const SearchPage = () => {
   });
 
   const handleSearch = async () => {
+    if (!searchTerm) {
+      return; // Do not perform search if the search term is empty
+    }
+
     console.log('Fetching data from Supabase and external APIs...');
     try {
       const promises = [];
@@ -32,8 +36,7 @@ const SearchPage = () => {
           supabase
             .from('profiles')
             .select('*')
-            .ilike('first_name', `%${searchTerm}%`)
-            .ilike('last_name', `%${searchTerm}%`)
+            .or(`first_name.ilike.${searchTerm},last_name.ilike.${searchTerm}`)
         );
       }
       if (filters.models) {
@@ -55,12 +58,12 @@ const SearchPage = () => {
       if (filters.publications) {
         promises.push(
           axios.get(`https://api.crossref.org/works?query=${searchTerm}`)
-            .then(response => response.data.message.items.map(item => ({
-              title: item.title[0],
+            .then(response => response.data.message.items ? response.data.message.items.map(item => ({
+              title: item.title ? item.title[0] : 'No Title',
               author: item.author ? item.author.map(a => a.family).join(', ') : 'Unknown Author',
               journal: item['container-title'] ? item['container-title'][0] : 'Unknown Journal',
               url: item.URL
-            })))
+            })) : [])
         );
       }
 
@@ -83,7 +86,9 @@ const SearchPage = () => {
   };
 
   useEffect(() => {
-    handleSearch();
+    if (searchTerm) {
+      handleSearch();
+    }
   }, [filters]);
 
   const handleKeyPress = (event) => {

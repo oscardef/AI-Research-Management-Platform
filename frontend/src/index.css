@@ -15,17 +15,17 @@ code {
   text-align: center;
 }
 
-.Navbar {
+.NavBar {
   margin-bottom: 1rem;
 }
 
-.Navbar a {
+.NavBar a {
   margin-right: 1rem;
   text-decoration: none;
   color: inherit;
 }
 
-.Navbar a.active {
+.NavBar a.active {
   font-weight: bold;
   color: yellow;
 }
