@@ -30,14 +30,20 @@ const SearchPage = () => {
     console.log('Fetching data from Supabase and external APIs...');
     try {
       const promises = [];
+      const searchTerms = searchTerm.split(' ');
 
       if (filters.profiles) {
-        promises.push(
-          supabase
-            .from('profiles')
-            .select('*')
-            .or(`first_name.ilike.${searchTerm},last_name.ilike.${searchTerm}`)
-        );
+        let profileQuery = supabase.from('profiles').select('*');
+        if (searchTerms.length > 1) {
+          profileQuery = profileQuery.or(
+            `first_name.ilike.%${searchTerms[0]}%,last_name.ilike.%${searchTerms[1]}%`
+          );
+        } else {
+          profileQuery = profileQuery.or(
+            `first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`
+          );
+        }
+        promises.push(profileQuery);
       }
       if (filters.models) {
         promises.push(
