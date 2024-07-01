@@ -5,7 +5,7 @@ import {
   TextField, MenuItem
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../services/supabaseClient';
 
 const MyResearchProjectsPage = () => {
   const [projects, setProjects] = useState([]);

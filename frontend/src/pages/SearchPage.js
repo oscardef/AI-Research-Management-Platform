@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, IconButton, Button, Menu, MenuItem, Checkbox, FormControlLabel, Typography } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../services/supabaseClient';
 import axios from 'axios';
-import ProfileResult from '../components/ProfileResult';
-import ModelResult from '../components/ModelResult';
-import ResearchProjectResult from '../components/ResearchProjectResult';
-import PublicationResult from '../components/PublicationResult';
+import ProfileResult from '../components/Profile/ProfileResult';
+import ModelResult from '../components/Model/ModelResult';
+import ResearchProjectResult from '../components/ResearchProject/ResearchProjectResult';
+import PublicationResult from '../components/Publication/PublicationResult';
 
 const SearchPage = () => {
   const [searchTerm, setSearchTerm] = useState('');

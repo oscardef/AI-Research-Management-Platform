@@ -12,10 +12,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import DeleteIcon from '@mui/icons-material/Delete';
 import axios from 'axios';
 import useProject from '../hooks/useProject';
-import RelatedProjects from '../components/research-projects/RelatedProjects';
-import RelatedModels from '../components/research-projects/RelatedModels';
-import RelatedPublications from '../components/research-projects/RelatedPublications';
-import { supabase } from '../supabaseClient';
+import RelatedProjects from '../components/ResearchProject/RelatedComponents/RelatedProjects';
+import RelatedModels from '../components/ResearchProject/RelatedComponents/RelatedModels';
+import RelatedPublications from '../components/ResearchProject/RelatedComponents/RelatedPublications';
+import { supabase } from '../services/supabaseClient';
 
 const ResearchPage = () => {
   const { projectId } = useParams();

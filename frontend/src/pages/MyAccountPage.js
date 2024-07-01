@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography, IconButton } from '@mui/material';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../services/supabaseClient';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 

@@ -1,41 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, List, ListItem, ListItemText, Button, Dialog, DialogActions,
-  DialogContent, DialogTitle, TextField, IconButton
+  DialogContent, DialogTitle, TextField, IconButton, CircularProgress
 } from '@mui/material';
-import { supabase } from '../supabaseClient';
 import { Link } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { useForm } from 'react-hook-form';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../services/supabaseClient'; // Make sure to import your Supabase client
 
 const MyModelsPage = () => {
+  const { session } = useAuth();
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const { register, handleSubmit, reset } = useForm();
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFileName, setSelectedFileName] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const fetchModels = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data, error } = await supabase
-          .from('models')
-          .select('*')
-          .contains('collaborators', [user.id]);
+      if (session) {
+        try {
+          const { data, error } = await supabase
+            .from('models')
+            .select('*')
+            .eq('user_id', session.user.id);
 
-        if (error) {
+          if (error) throw error;
+          setModels(data || []);
+        } catch (error) {
           console.error('Error fetching models:', error);
-        } else {
-          setModels(data);
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
       }
     };
 
     fetchModels();
-  }, []);
+  }, [session]);
 
   const handleOpen = () => {
     setOpen(true);
@@ -45,63 +50,78 @@ const MyModelsPage = () => {
     setOpen(false);
     reset();
     setSelectedFile(null);
+    setSelectedFileName('');
+    setUploading(false);
   };
 
   const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
+    const file = event.target.files[0];
+    setSelectedFile(file);
+    setSelectedFileName(file ? file.name : '');
   };
 
-  const handleDelete = async (id) => {
-    const { data, error } = await supabase
-      .from('models')
-      .delete()
-      .eq('id', id);
+  const handleDelete = async (id, fileUrl) => {
+    try {
+      // Delete the file from Supabase Storage
+      const { error: storageError } = await supabase
+        .storage
+        .from('model-files')
+        .remove([fileUrl]);
 
-    if (error) {
+      if (storageError) throw storageError;
+
+      // Delete the model entry from the Supabase database
+      const { error } = await supabase
+        .from('models')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setModels(models.filter(model => model.id !== id));
+    } catch (error) {
       console.error('Error deleting model:', error);
       alert(`Error deleting model: ${error.message}`);
-    } else {
-      setModels(models.filter(model => model.id !== id));
     }
   };
 
   const onSubmit = async (data) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (selectedFile && user) {
-      const folderPath = `${user.id}`;
+    if (selectedFile && session) {
+      const userId = session.user.id;
       const fileName = `${Date.now()}_${selectedFile.name}`;
-      const filePath = `${folderPath}/${fileName}`;
+      const filePath = `${userId}/${fileName}`;
 
-      // Upload the actual file
-      const { data: fileData, error: fileError } = await supabase
-        .storage
-        .from('model-files')
-        .upload(filePath, selectedFile);
+      setUploading(true);
 
-      if (fileError) {
-        console.error('Error uploading file:', fileError);
-        alert(`Error uploading file: ${fileError.message}`);
-      } else if (fileData) {
-        const { data: modelData, error: modelError } = await supabase
+      try {
+        // Upload the file to Supabase Storage
+        const { error: uploadError } = await supabase
+          .storage
+          .from('model-files')
+          .upload(filePath, selectedFile);
+
+        if (uploadError) throw uploadError;
+
+        // Create the model entry in the Supabase database
+        const { data: modelData, error: insertError } = await supabase
           .from('models')
-          .insert({
-            user_id: user.id,
-            name: data.name,
-            description: data.description,
-            version: data.version,
-            performance_metrics: data.performance_metrics,
-            file_url: filePath,
-            created_at: new Date().toISOString()
-          })
-          .select(); // Make sure to select the inserted data
+          .insert([
+            {
+              ...data,
+              user_id: userId,
+              file_url: filePath,
+            },
+          ])
+          .single();
 
-        if (modelError) {
-          console.error('Error creating model:', modelError);
-          alert(`Error creating model: ${modelError.message}`);
-        } else if (modelData && modelData.length > 0) {
-          setModels([...models, modelData[0]]);
-          handleClose();
-        }
+        if (insertError) throw insertError;
+
+        setModels(prevModels => [...prevModels, modelData]); // Update the state with the new model
+        handleClose();
+      } catch (error) {
+        console.error('Error creating model:', error);
+        alert(`Error creating model: ${error.message}`);
+        setUploading(false);
       }
     } else {
       alert('Please select a file to upload');
@@ -109,7 +129,6 @@ const MyModelsPage = () => {
   };
 
   const handleDeploy = async (model) => {
-    // Implement deployment logic to UBbiOps here
     alert(`Deploying model: ${model.name}`);
   };
 
@@ -125,19 +144,21 @@ const MyModelsPage = () => {
       </Button>
       <List>
         {models.map((model) => (
-          <ListItem key={model.id}>
-            <ListItemText
-              primary={model.name}
-              secondary={`Version: ${model.version} | Metrics: ${model.performance_metrics}`}
-              component={Link} to={`/model/${model.id}`}
-            />
-            <IconButton onClick={() => handleDeploy(model)}>
-              <AddIcon color="primary" />
-            </IconButton>
-            <IconButton onClick={() => handleDelete(model.id)}>
-              <DeleteIcon color="error" />
-            </IconButton>
-          </ListItem>
+          model && (
+            <ListItem key={model.id}>
+              <ListItemText
+                primary={model.name}
+                secondary={`Version: ${model.version} | Metrics: ${model.performance_metrics}`}
+                component={Link} to={`/model/${model.id}`}
+              />
+              <IconButton onClick={() => handleDeploy(model)}>
+                <AddIcon color="primary" />
+              </IconButton>
+              <IconButton onClick={() => handleDelete(model.id, model.file_url)}>
+                <DeleteIcon color="error" />
+              </IconButton>
+            </ListItem>
+          )
         ))}
       </List>
 
@@ -182,6 +203,7 @@ const MyModelsPage = () => {
               variant="contained"
               component="label"
               sx={{ mt: 2 }}
+              disabled={uploading} // Disable button while uploading
             >
               Upload File
               <input
@@ -190,12 +212,17 @@ const MyModelsPage = () => {
                 onChange={handleFileChange}
               />
             </Button>
+            {selectedFileName && (
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                Selected file: {selectedFileName}
+              </Typography>
+            )}
             <DialogActions>
-              <Button onClick={handleClose} color="primary">
+              <Button onClick={handleClose} color="primary" disabled={uploading}>
                 Cancel
               </Button>
-              <Button type="submit" color="primary">
-                Upload
+              <Button type="submit" color="primary" disabled={uploading}>
+                {uploading ? <CircularProgress size={24} /> : 'Upload'}
               </Button>
             </DialogActions>
           </form>
