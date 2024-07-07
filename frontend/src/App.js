@@ -6,34 +6,33 @@ import ResearchPage from './pages/ResearchPage';
 import AIModelsPage from './pages/AIModelsPage';
 import LoginPage from './pages/LoginPage';
 import MyAccountPage from './pages/MyAccountPage';
-import MySettingsPage from './pages/MySettingsPage';
+// import MySettingsPage from './pages/MySettingsPage';
 import MyResearchProjectsPage from './pages/MyResearchProjectsPage';
-import MyModelsPage from './pages/MyModelsPage';
-import { supabase } from './services/supabaseClient';
+// import MyModelsPage from './pages/MyModelsPage';
+import { pb } from './services/pocketbaseClient';
 import { AuthProvider } from './context/AuthContext';
-import { ModelProvider } from './context/ModelContext';
 
 const App = () => {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setAuthenticated(!!session);
+    const checkAuth = () => {
+      setAuthenticated(pb.authStore.isValid);
       setLoading(false);
     };
 
-    checkSession();
+    checkAuth();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      setAuthenticated(!!session);
-    });
+    const handleAuthChange = () => {
+      setAuthenticated(pb.authStore.isValid);
+    };
+
+    pb.authStore.onChange(handleAuthChange);
 
     return () => {
-      authListener.subscription.unsubscribe();
+      // Clean up effect
+      pb.authStore.onChange(null);
     };
   }, []);
 
@@ -44,7 +43,6 @@ const App = () => {
   return (
     <Router>
       <AuthProvider>
-        <ModelProvider>
           {authenticated && <NavBar />}
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -52,12 +50,11 @@ const App = () => {
             <Route path="/research/:projectId" element={authenticated ? <ResearchPage /> : <Navigate to="/login" />} />
             <Route path="/ai-models" element={authenticated ? <AIModelsPage /> : <Navigate to="/login" />} />
             <Route path="/account" element={authenticated ? <MyAccountPage /> : <Navigate to="/login" />} />
-            <Route path="/settings" element={authenticated ? <MySettingsPage /> : <Navigate to="/login" />} />
+            {/* <Route path="/settings" element={authenticated ? <MySettingsPage /> : <Navigate to="/login" />} /> */}
             <Route path="/research-projects" element={authenticated ? <MyResearchProjectsPage /> : <Navigate to="/login" />} />
-            <Route path="/models" element={authenticated ? <MyModelsPage /> : <Navigate to="/login" />} />
-            <Route path="*" element={<Navigate to={authenticated ? "/search" : "/login"} />} />
+            {/* <Route path="/models" element={authenticated ? <MyModelsPage /> : <Navigate to="/login" />} />
+            <Route path="*" element={<Navigate to={authenticated ? "/search" : "/login"} />} /> */}
           </Routes>
-        </ModelProvider>
       </AuthProvider>
     </Router>
   );

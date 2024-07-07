@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, IconButton, Button, Menu, MenuItem, Checkbox, FormControlLabel, Typography } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { supabase } from '../services/supabaseClient';
+import { pb } from '../services/pocketbaseClient';
 import axios from 'axios';
 import ProfileResult from '../components/Profile/ProfileResult';
 import ModelResult from '../components/Model/ModelResult';
@@ -27,38 +27,29 @@ const SearchPage = () => {
       return; // Do not perform search if the search term is empty
     }
 
-    console.log('Fetching data from Supabase and external APIs...');
+    console.log('Fetching data from PocketBase and external APIs...');
     try {
       const promises = [];
       const searchTerms = searchTerm.split(' ');
 
       if (filters.profiles) {
-        let profileQuery = supabase.from('profiles').select('*');
-        if (searchTerms.length > 1) {
-          profileQuery = profileQuery.or(
-            `first_name.ilike.%${searchTerms[0]}%,last_name.ilike.%${searchTerms[1]}%`
-          );
-        } else {
-          profileQuery = profileQuery.or(
-            `first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`
-          );
-        }
+        let profileQuery = pb.collection('users').getFullList({
+          filter: `name ~ "${searchTerm}"`,
+        });
         promises.push(profileQuery);
       }
       if (filters.models) {
         promises.push(
-          supabase
-            .from('models')
-            .select('*')
-            .ilike('name', `%${searchTerm}%`)
+          pb.collection('models').getFullList({
+            filter: `name ~ "${searchTerm}"`,
+          })
         );
       }
       if (filters.researchProjects) {
         promises.push(
-          supabase
-            .from('research_projects')
-            .select('*')
-            .ilike('title', `%${searchTerm}%`)
+          pb.collection('research_projects').getFullList({
+            filter: `title ~ "${searchTerm}"`,
+          })
         );
       }
       if (filters.publications) {
@@ -75,9 +66,9 @@ const SearchPage = () => {
 
       const results = await Promise.all(promises);
 
-      const profileResults = results[0]?.data || [];
-      const modelResults = results[1]?.data || [];
-      const researchProjectResults = results[2]?.data || [];
+      const profileResults = results[0] || [];
+      const modelResults = results[1] || [];
+      const researchProjectResults = results[2] || [];
       const publicationResults = results[3] || [];
 
       setProfileResults(profileResults);

@@ -8,7 +8,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../services/supabaseClient'; // Make sure to import your Supabase client
+import { supabase } from '../services/pocketbaseClient'; // Make sure to import your Supabase client
 
 const MyModelsPage = () => {
   const { session } = useAuth();

@@ -4,18 +4,17 @@ import {
   Box, Grid, Typography, TextField, IconButton, Dialog, DialogActions,
   DialogContent, DialogTitle, List, ListItem, ListItemText, Button
 } from '@mui/material';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
-import DeleteIcon from '@mui/icons-material/Delete';
 import axios from 'axios';
 import useProject from '../hooks/useProject';
 import RelatedProjects from '../components/ResearchProject/RelatedComponents/RelatedProjects';
 import RelatedModels from '../components/ResearchProject/RelatedComponents/RelatedModels';
 import RelatedPublications from '../components/ResearchProject/RelatedComponents/RelatedPublications';
-import { supabase } from '../services/supabaseClient';
+import { pb } from '../services/pocketbaseClient';
 
 const ResearchPage = () => {
   const { projectId } = useParams();
@@ -37,18 +36,15 @@ const ResearchPage = () => {
 
     let searchQuery;
     if (searchType === 'project') {
-      searchQuery = supabase
-        .from('research_projects')
-        .select('*')
-        .ilike('title', `%${searchTerm}%`)
-        .neq('id', projectId)
-        .not('id', 'in', `(${relatedProjects.map(proj => proj.id).join(',')})`);
+      searchQuery = pb.collection('research_projects')
+        .getFullList({
+          filter: `title~"${searchTerm}" && id!=${projectId} && id not in (${relatedProjects.map(proj => proj.id).join(',')})`,
+        });
     } else if (searchType === 'model') {
-      searchQuery = supabase
-        .from('models')
-        .select('*')
-        .ilike('name', `%${searchTerm}%`)
-        .not('id', 'in', `(${relatedModels.map(model => model.id).join(',')})`);
+      searchQuery = pb.collection('models')
+        .getFullList({
+          filter: `name~"${searchTerm}" && id not in (${relatedModels.map(model => model.id).join(',')})`,
+        });
     } else if (searchType === 'publication') {
       const response = await axios.get(`https://api.crossref.org/works?query=${searchTerm}`);
       searchQuery = response.data.message.items.map(item => ({
@@ -61,30 +57,26 @@ const ResearchPage = () => {
       return;
     }
 
-    const { data, error } = await searchQuery;
-    if (error) {
-      console.error('Error fetching search results:', error);
-    } else {
+    try {
+      const data = await searchQuery;
       setSearchResults(data);
+    } catch (error) {
+      console.error('Error fetching search results:', error);
     }
   };
 
   const handleUpdate = async (updatedData) => {
-    console.log("Updated data:", updatedData);
-    const { data, error } = await supabase
-      .from('research_projects')
-      .update({
-        related_projects: updatedData.related_projects || relatedProjects.map(proj => proj.id),
-        related_models: updatedData.related_models || relatedModels.map(model => model.id),
-        related_publications: updatedData.related_publications || relatedPublications
-      })
-      .eq('id', project.id);
-    console.log('Update response:', data, error);
-    if (error) {
+    try {
+      await pb.collection('research_projects')
+        .update(project.id, {
+          related_projects: updatedData.related_projects || relatedProjects.map(proj => proj.id),
+          related_models: updatedData.related_models || relatedModels.map(model => model.id),
+          related_publications: updatedData.related_publications || relatedPublications,
+        });
+      console.log('Project updated successfully');
+    } catch (error) {
       console.error('Error updating project:', error);
       alert(`Error updating project: ${error.message}`);
-    } else {
-      console.log('Project updated successfully');
     }
   };
 

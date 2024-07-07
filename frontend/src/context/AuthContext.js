@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { pb } from '../services/pocketbaseClient'; // Adjusted import
 
 const AuthContext = createContext();
 
@@ -7,33 +7,26 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error getting session:', error);
-      } else {
-        setSession(data.session);
-      }
+    const getSession = () => {
+      setSession(pb.authStore.model);
     };
 
     getSession();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+    const handleAuthChange = () => {
+      setSession(pb.authStore.model);
+    };
+
+    pb.authStore.onChange(handleAuthChange);
 
     return () => {
-      authListener.subscription.unsubscribe();
+      // Clean up effect
+      pb.authStore.onChange(null);
     };
   }, []);
 
   const getToken = async () => {
-    const { data, error } = await supabase.auth.getSession();
-    if (error) {
-      console.error('Error getting session:', error);
-      return null;
-    }
-    return data.session?.access_token || null;
+    return pb.authStore.token || null;
   };
 
   return (

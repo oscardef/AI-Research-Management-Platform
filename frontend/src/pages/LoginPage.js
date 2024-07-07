@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { pb } from '../services/pocketbaseClient';
 import { useNavigate } from 'react-router-dom';
 import { TextField, Button, Box, Typography } from '@mui/material';
 
@@ -11,8 +11,8 @@ const LoginPage = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      const authData = pb.authStore.isValid;
+      if (authData) {
         navigate('/search');
       }
     };
@@ -21,11 +21,11 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setError(error.message);
-    } else {
+    try {
+      await pb.collection('users').authWithPassword(email, password);
       navigate('/search');
+    } catch (error) {
+      setError(error.message);
     }
   };
 

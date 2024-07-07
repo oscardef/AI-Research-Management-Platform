@@ -3,7 +3,7 @@ import { AppBar, Toolbar, Box, Button, IconButton, Menu, MenuItem } from '@mui/m
 import { NavLink } from 'react-router-dom';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import { supabase } from '../../services/supabaseClient';
+import { pb } from '../../services/pocketbaseClient';
 
 const NavBar = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -17,7 +17,7 @@ const NavBar = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    pb.authStore.clear();
     window.location.href = '/login';
   };
 
