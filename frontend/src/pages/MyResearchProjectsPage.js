@@ -2,37 +2,43 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, List, ListItem, ListItemText,
   Button, Dialog, DialogActions, DialogContent, DialogTitle,
-  TextField, MenuItem
+  TextField, MenuItem, IconButton, InputAdornment
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { supabase } from '../services/supabaseClient';
+import { pb } from '../services/pocketbaseClient';
+import SearchIcon from '@mui/icons-material/Search';
 
 const MyResearchProjectsPage = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [newProject, setNewProject] = useState({
     title: '',
     description: '',
     status: 'active',
-    tags: ''
+    tags: '',
+    related_projects: [],
+    related_models: [],
+    related_publications: []
   });
+  const [searchType, setSearchType] = useState('');
 
   useEffect(() => {
     const fetchProjects = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = pb.authStore.model;
       console.log('Authenticated user:', user);
       if (user) {
-        const { data, error } = await supabase
-          .from('research_projects')
-          .select('*')
-          .contains('collaborators', [user.id]);
-
-        if (error) {
+        try {
+          const projectsData = await pb.collection('research_projects').getFullList(200, {
+            filter: `collaborators~'${user.id}'`
+          });
+          console.log('Fetched projects:', projectsData);
+          setProjects(projectsData);
+        } catch (error) {
           console.error('Error fetching projects:', error);
-        } else {
-          console.log('Fetched projects:', data);
-          setProjects(data);
         }
         setLoading(false);
       }
@@ -51,7 +57,10 @@ const MyResearchProjectsPage = () => {
       title: '',
       description: '',
       status: 'active',
-      tags: ''
+      tags: '',
+      related_projects: [],
+      related_models: [],
+      related_publications: []
     });
   };
 
@@ -60,32 +69,81 @@ const MyResearchProjectsPage = () => {
   };
 
   const handleCreate = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = pb.authStore.model;
     const projectData = {
-      ...newProject,
-      collaborators: [user.id],
+      title: newProject.title,
+      description: newProject.description,
+      status: newProject.status,
       tags: newProject.tags.split(',').map(tag => tag.trim()),
-      created_at: new Date().toISOString()
+      related_projects: newProject.related_projects,
+      related_models: newProject.related_models,
+      related_publications: newProject.related_publications,
+      collaborators: [user.id],
     };
     console.log('Project data to be inserted:', projectData);
 
-    const { data, error } = await supabase
-      .from('research_projects')
-      .insert([projectData]);
-
-    if (error) {
+    try {
+      const createdProject = await pb.collection('research_projects').create(projectData);
+      console.log('Created project:', createdProject);
+      alert('Project created successfully');
+      setProjects([...projects, createdProject]);
+      handleClose();
+    } catch (error) {
       console.error('Error creating project:', error);
       alert(`Error creating project: ${error.message}`);
-    } else {
-      console.log('Insert response data:', data);
-      if (data && data.length > 0) {
-        alert('Project created successfully');
-        setProjects([...projects, data[0]]);
-      } else {
-        console.error('Unexpected insert response:', data);
-      }
-      handleClose();
     }
+  };
+
+  const handleSearchOpen = (type) => {
+    setSearchType(type);
+    setSearchOpen(true);
+  };
+
+  const handleSearchClose = () => {
+    setSearchOpen(false);
+    setSearchResults([]);
+    setSearchQuery('');
+  };
+
+  const handleSearchChange = async (e) => {
+    setSearchQuery(e.target.value);
+    if (e.target.value.trim().length > 2) {
+      let results = [];
+      if (searchType === 'projects') {
+        results = await pb.collection('research_projects').getFullList(200, {
+          filter: `title~'${e.target.value}'`
+        });
+      } else if (searchType === 'models') {
+        results = await pb.collection('models').getFullList(200, {
+          filter: `name~'${e.target.value}'`
+        });
+      } else if (searchType === 'publications') {
+        const response = await fetch(`https://api.crossref.org/works?query=${e.target.value}`);
+        const data = await response.json();
+        if (data.message && data.message.items) {
+          results = data.message.items.map(item => ({
+            name: item.title ? item.title[0] : 'No Title',
+            url: item.URL
+          }));
+        } else {
+          console.error('Unexpected response structure:', data);
+        }
+      }
+      setSearchResults(results);
+    } else {
+      setSearchResults([]);
+    }
+  };
+
+  const handleAddResult = (result) => {
+    if (searchType === 'projects') {
+      setNewProject({ ...newProject, related_projects: [...newProject.related_projects, result.id] });
+    } else if (searchType === 'models') {
+      setNewProject({ ...newProject, related_models: [...newProject.related_models, result.id] });
+    } else if (searchType === 'publications') {
+      setNewProject({ ...newProject, related_publications: [...newProject.related_publications, { name: result.name, url: result.url }] });
+    }
+    handleSearchClose();
   };
 
   if (loading) {
@@ -98,16 +156,20 @@ const MyResearchProjectsPage = () => {
       <Button variant="contained" color="success" onClick={handleClickOpen} sx={{ mb: 2 }}>
         Create Research Project
       </Button>
-      <List>
-        {projects.map((project) => (
-          <ListItem key={project.id} component={Link} to={`/research/${project.id}`}>
-            <ListItemText
-              primary={project.title}
-              secondary={project.description}
-            />
-          </ListItem>
-        ))}
-      </List>
+      {projects.length === 0 ? (
+        <Typography>No projects found.</Typography>
+      ) : (
+        <List>
+          {projects.map((project) => (
+            <ListItem key={project.id} component={Link} to={`/research/${project.id}`}>
+              <ListItemText
+                primary={project.title}
+                secondary={project.description}
+              />
+            </ListItem>
+          ))}
+        </List>
+      )}
 
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Create Research Project</DialogTitle>
@@ -157,6 +219,60 @@ const MyResearchProjectsPage = () => {
             value={newProject.tags}
             onChange={handleChange}
           />
+          <TextField
+            margin="dense"
+            label="Related Projects"
+            name="related_projects"
+            fullWidth
+            variant="outlined"
+            value={newProject.related_projects.join(', ')}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => handleSearchOpen('projects')}>
+                    <SearchIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            onChange={(e) => setNewProject({ ...newProject, related_projects: e.target.value.split(',').map(id => id.trim()) })}
+          />
+          <TextField
+            margin="dense"
+            label="Related Models"
+            name="related_models"
+            fullWidth
+            variant="outlined"
+            value={newProject.related_models.join(', ')}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => handleSearchOpen('models')}>
+                    <SearchIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            onChange={(e) => setNewProject({ ...newProject, related_models: e.target.value.split(',').map(id => id.trim()) })}
+          />
+          <TextField
+            margin="dense"
+            label="Related Publications"
+            name="related_publications"
+            fullWidth
+            variant="outlined"
+            value={newProject.related_publications.map(pub => pub.name).join(', ')}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => handleSearchOpen('publications')}>
+                    <SearchIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            onChange={(e) => setNewProject({ ...newProject, related_publications: e.target.value.split(',').map(name => ({ name, url: '' })) })}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
@@ -164,6 +280,36 @@ const MyResearchProjectsPage = () => {
           </Button>
           <Button onClick={handleCreate} color="primary">
             Create
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={searchOpen} onClose={handleSearchClose}>
+        <DialogTitle>Search {searchType === 'projects' ? 'Related Projects' : searchType === 'models' ? 'Related Models' : 'Publications'}</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Search"
+            fullWidth
+            variant="outlined"
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
+          <List>
+            {searchResults.map((result, index) => (
+              <ListItem button key={index} onClick={() => handleAddResult(result)}>
+                <ListItemText
+                  primary={searchType === 'publications' ? result.name : result.title || result.name}
+                  secondary={searchType === 'publications' ? result.url : ''}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSearchClose} color="primary">
+            Cancel
           </Button>
         </DialogActions>
       </Dialog>

@@ -12,7 +12,9 @@ const useProject = (projectId) => {
     useEffect(() => {
         const fetchProject = async () => {
             try {
-                const data = await pb.collection('research_projects').getOne(projectId);
+                const data = await pb.collection('research_projects').getOne(projectId, {
+                    expand: 'related_projects,related_models,related_publications'
+                });
                 setProject({
                     ...data,
                     related_projects: data.related_projects || [],
@@ -21,15 +23,15 @@ const useProject = (projectId) => {
                 });
 
                 if (data.related_projects && data.related_projects.length > 0) {
-                    const projectDetails = await pb.collection('research_projects').getFullList({
-                        filter: `id in (${data.related_projects.join(',')})`,
+                    const projectDetails = await pb.collection('research_projects').getFullList(200, {
+                        filter: `id in (${data.related_projects.map(p => p.id).join(',')})`,
                     });
                     setRelatedProjects(projectDetails || []);
                 }
 
                 if (data.related_models && data.related_models.length > 0) {
-                    const modelDetails = await pb.collection('models').getFullList({
-                        filter: `id in (${data.related_models.join(',')})`,
+                    const modelDetails = await pb.collection('models').getFullList(200, {
+                        filter: `id in (${data.related_models.map(m => m.id).join(',')})`,
                     });
                     setRelatedModels(modelDetails || []);
                 }
