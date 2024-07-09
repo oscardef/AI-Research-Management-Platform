@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Button, DialogActions,
-  TextField, CircularProgress, MenuItem
+  TextField, CircularProgress, MenuItem, Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemText, Radio, RadioGroup, FormControlLabel
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -25,6 +25,11 @@ const ModelPage = () => {
     tags: ''
   });
   const [uploading, setUploading] = useState(false);
+  const [deployOpen, setDeployOpen] = useState(false);
+  const [deployData, setDeployData] = useState({
+    file_url: ''
+  });
+  const [deployLoading, setDeployLoading] = useState(false);
 
   useEffect(() => {
     const fetchModel = async () => {
@@ -88,14 +93,13 @@ const ModelPage = () => {
 
   const handleDeploy = async () => {
     if (model.files && model.files.length > 0) {
-      const fileUrl = pb.getFileUrl(model, model.files[0]); // Get the file URL from PocketBase
-
+      const fileUrl = pb.getFileUrl(model, deployData.file_url); // Get the file URL from PocketBase
+      setDeployLoading(true);
       const data = {
         project_name: 'ai-research-management-platform',
         deployment_name: model.name,
         deployment_description: model.description,
         deployment_version: model.version,
-        deployment_labels: model.tags,
         file_url: fileUrl
       };
 
@@ -103,12 +107,43 @@ const ModelPage = () => {
         const response = await axios.post('http://localhost:5000/deploy', data);
         alert(response.data.message);
       } catch (error) {
-        console.error('Error deploying model:', error);
-        alert(`Error deploying model: ${error.response ? error.response.data.error : error.message}`);
+        if (error.response && error.response.status === 409) {
+          const override = window.confirm('Deployment already exists. Do you want to override it?');
+          if (override) {
+            try {
+              const response = await axios.post('http://localhost:5000/override_deployment', data);
+              alert(response.data.message);
+            } catch (overrideError) {
+              console.error('Error overriding deployment:', overrideError);
+              alert(`Error overriding deployment: ${overrideError.response ? overrideError.response.data.error : overrideError.message}`);
+            }
+          }
+        } else {
+          console.error('Error deploying model:', error);
+          alert(`Error deploying model: ${error.response ? error.response.data.error : error.message}`);
+        }
+      } finally {
+        setDeployLoading(false);
+        handleDeployClose();
       }
     } else {
       alert('No files available for deployment');
     }
+  };
+
+  const handleDeployOpen = () => {
+    setDeployOpen(true);
+  };
+
+  const handleDeployClose = () => {
+    setDeployOpen(false);
+    setDeployData({
+      file_url: ''
+    });
+  };
+
+  const handleFileSelect = (e) => {
+    setDeployData({ ...deployData, file_url: e.target.value });
   };
 
   if (loading) {
@@ -211,11 +246,31 @@ const ModelPage = () => {
           <Button variant="contained" color="error" onClick={handleDelete} sx={{ mt: 2 }}>
             Delete
           </Button>
-          <Button variant="contained" color="secondary" onClick={handleDeploy} sx={{ mt: 2 }}>
+          <Button variant="contained" color="secondary" onClick={handleDeployOpen} sx={{ mt: 2 }}>
             Deploy to UbiOps
           </Button>
         </>
       )}
+
+      <Dialog open={deployOpen} onClose={handleDeployClose}>
+        <DialogTitle>Deploy to UbiOps</DialogTitle>
+        <DialogContent>
+          <Typography variant="h6">Version: {model.version}</Typography>
+          <RadioGroup name="file_url" value={deployData.file_url} onChange={handleFileSelect}>
+            {model.files.map((file, index) => (
+              <FormControlLabel key={index} value={file} control={<Radio />} label={file} />
+            ))}
+          </RadioGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeployClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeploy} color="primary" disabled={deployLoading}>
+            {deployLoading ? <CircularProgress size={24} /> : 'Deploy'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
