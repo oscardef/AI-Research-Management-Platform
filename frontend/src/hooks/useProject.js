@@ -8,35 +8,38 @@ const useProject = (projectId) => {
     const [relatedProjects, setRelatedProjects] = useState([]);
     const [relatedModels, setRelatedModels] = useState([]);
     const [relatedPublications, setRelatedPublications] = useState([]);
+    const [collaborators, setCollaborators] = useState([]);
 
     useEffect(() => {
         const fetchProject = async () => {
             try {
-                const data = await pb.collection('research_projects').getOne(projectId, {
-                    expand: 'related_projects,related_models,related_publications'
-                });
-                setProject({
-                    ...data,
-                    related_projects: data.related_projects || [],
-                    related_models: data.related_models || [],
-                    related_publications: data.related_publications || []
-                });
+                const data = await pb.collection('research_projects').getOne(projectId);
+                setProject(data);
 
                 if (data.related_projects && data.related_projects.length > 0) {
-                    const projectDetails = await pb.collection('research_projects').getFullList(200, {
-                        filter: `id in (${data.related_projects.map(p => p.id).join(',')})`,
-                    });
-                    setRelatedProjects(projectDetails || []);
+                    const projectDetails = await Promise.all(
+                        data.related_projects.map(id => pb.collection('research_projects').getOne(id))
+                    );
+                    setRelatedProjects(projectDetails);
                 }
 
                 if (data.related_models && data.related_models.length > 0) {
-                    const modelDetails = await pb.collection('models').getFullList(200, {
-                        filter: `id in (${data.related_models.map(m => m.id).join(',')})`,
-                    });
-                    setRelatedModels(modelDetails || []);
+                    const modelDetails = await Promise.all(
+                        data.related_models.map(id => pb.collection('models').getOne(id))
+                    );
+                    setRelatedModels(modelDetails);
                 }
 
-                setRelatedPublications(data.related_publications || []);
+                if (data.collaborators && data.collaborators.length > 0) {
+                    const collaboratorDetails = await Promise.all(
+                        data.collaborators.map(id => pb.collection('users').getOne(id))
+                    );
+                    setCollaborators(collaboratorDetails);
+                }
+
+                if (data.related_publications && data.related_publications.length > 0) {
+                    setRelatedPublications(data.related_publications);
+                }
             } catch (error) {
                 console.error('Error fetching project:', error);
             } finally {
@@ -53,10 +56,12 @@ const useProject = (projectId) => {
         relatedProjects,
         relatedModels,
         relatedPublications,
+        collaborators,
         setProject,
         setRelatedProjects,
         setRelatedModels,
         setRelatedPublications,
+        setCollaborators,
     };
 };
 

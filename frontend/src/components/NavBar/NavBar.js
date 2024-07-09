@@ -3,6 +3,7 @@ import { AppBar, Toolbar, Box, Button, IconButton, Menu, MenuItem } from '@mui/m
 import { NavLink } from 'react-router-dom';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import { pb } from '../../services/pocketbaseClient';
 
 const NavBar = () => {
@@ -28,11 +29,8 @@ const NavBar = () => {
           <Button component={NavLink} to="/search" color="inherit">
             Search
           </Button>
-          <Button component={NavLink} to="/research" color="inherit">
-            Research
-          </Button>
-          <Button component={NavLink} to="/ai-models" color="inherit">
-            AI Models
+          <Button component={NavLink} to="/dashboard" color="inherit">
+            Dashboard
           </Button>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -67,11 +65,8 @@ const NavBar = () => {
             <MenuItem component={NavLink} to="/settings">
               Settings
             </MenuItem>
-            <MenuItem component={NavLink} to="/research-projects">
-              My Research Projects
-            </MenuItem>
-            <MenuItem component={NavLink} to="/models">
-              My Models
+            <MenuItem component={NavLink} to="/dashboard">
+              <DashboardIcon style={{ marginRight: 8 }} /> Dashboard
             </MenuItem>
             <MenuItem onClick={handleLogout} style={{ color: 'red' }}>
               <ExitToAppIcon style={{ marginRight: 8 }} /> Log Out

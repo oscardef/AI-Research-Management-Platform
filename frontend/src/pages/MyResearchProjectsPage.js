@@ -6,9 +6,11 @@ import {
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { pb } from '../services/pocketbaseClient';
+import { useAuth } from '../context/AuthContext';
 import SearchIcon from '@mui/icons-material/Search';
 
 const MyResearchProjectsPage = () => {
+  const { session } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -28,12 +30,11 @@ const MyResearchProjectsPage = () => {
 
   useEffect(() => {
     const fetchProjects = async () => {
-      const user = pb.authStore.model;
-      console.log('Authenticated user:', user);
-      if (user) {
+      console.log('Authenticated user:', session);
+      if (session) {
         try {
           const projectsData = await pb.collection('research_projects').getFullList(200, {
-            filter: `collaborators~'${user.id}'`
+            filter: `collaborators~'${session.id}'`
           });
           console.log('Fetched projects:', projectsData);
           setProjects(projectsData);
@@ -45,7 +46,7 @@ const MyResearchProjectsPage = () => {
     };
 
     fetchProjects();
-  }, []);
+  }, [session]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -69,7 +70,6 @@ const MyResearchProjectsPage = () => {
   };
 
   const handleCreate = async () => {
-    const user = pb.authStore.model;
     const projectData = {
       title: newProject.title,
       description: newProject.description,
@@ -78,7 +78,7 @@ const MyResearchProjectsPage = () => {
       related_projects: newProject.related_projects,
       related_models: newProject.related_models,
       related_publications: newProject.related_publications,
-      collaborators: [user.id],
+      collaborators: [session.id],
     };
     console.log('Project data to be inserted:', projectData);
 

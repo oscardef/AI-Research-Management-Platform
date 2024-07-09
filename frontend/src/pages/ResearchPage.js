@@ -1,280 +1,194 @@
 // ResearchPage.js
 import React, { useState } from 'react';
 import {
-  Box, Grid, Typography, TextField, IconButton, Dialog, DialogActions,
-  DialogContent, DialogTitle, List, ListItem, ListItemText, Button
+    Box, Grid, Typography, TextField, Button, IconButton, Link, List, ListItem, ListItemText
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import AddIcon from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search';
-import axios from 'axios';
+import CancelIcon from '@mui/icons-material/Cancel';
 import useProject from '../hooks/useProject';
-import RelatedProjects from '../components/ResearchProject/RelatedComponents/RelatedProjects';
-import RelatedModels from '../components/ResearchProject/RelatedComponents/RelatedModels';
-import RelatedPublications from '../components/ResearchProject/RelatedComponents/RelatedPublications';
 import { pb } from '../services/pocketbaseClient';
 
 const ResearchPage = () => {
-  const { projectId } = useParams();
-  const {
-    project, loading, relatedProjects, relatedModels, relatedPublications,
-    setProject, setRelatedProjects, setRelatedModels, setRelatedPublications
-  } = useProject(projectId);
-  const [editing, setEditing] = useState({
-    title: false,
-    description: false,
-  });
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchType, setSearchType] = useState('');
+    const { projectId } = useParams();
+    const {
+        project, loading, relatedProjects, relatedModels, relatedPublications, collaborators,
+        setProject
+    } = useProject(projectId);
+    const [editing, setEditing] = useState(false);
+    const [tempProject, setTempProject] = useState({});
 
-  const handleSearch = async () => {
-    if (!searchTerm) return;
+    const toggleEdit = () => {
+        setEditing(!editing);
+        if (!editing) {
+            setTempProject({ ...project });
+        }
+    };
 
-    let searchQuery;
-    if (searchType === 'project') {
-      searchQuery = pb.collection('research_projects')
-        .getFullList({
-          filter: `title~"${searchTerm}" && id!=${projectId} && id not in (${relatedProjects.map(proj => proj.id).join(',')})`,
-        });
-    } else if (searchType === 'model') {
-      searchQuery = pb.collection('models')
-        .getFullList({
-          filter: `name~"${searchTerm}" && id not in (${relatedModels.map(model => model.id).join(',')})`,
-        });
-    } else if (searchType === 'publication') {
-      const response = await axios.get(`https://api.crossref.org/works?query=${searchTerm}`);
-      searchQuery = response.data.message.items.map(item => ({
-        id: item.DOI,
-        title: item.title[0],
-        description: item['container-title'] ? item['container-title'][0] : 'No description',
-        link: item.URL
-      }));
-      setSearchResults(searchQuery);
-      return;
+    const handleCancel = () => {
+        setEditing(false);
+        setTempProject({});
+    };
+
+    const handleSave = async () => {
+        try {
+            await pb.collection('research_projects').update(project.id, tempProject);
+            setProject(tempProject);
+            setEditing(false);
+            setTempProject({});
+        } catch (error) {
+            console.error('Error updating project:', error);
+            alert(`Error updating project: ${error.message}`);
+        }
+    };
+
+    const handleChange = (e) => {
+        setTempProject({ ...tempProject, [e.target.name]: e.target.value });
+    };
+
+    if (loading) {
+        return <Typography>Loading...</Typography>;
     }
 
-    try {
-      const data = await searchQuery;
-      setSearchResults(data);
-    } catch (error) {
-      console.error('Error fetching search results:', error);
+    if (!project) {
+        return <Typography>No project found</Typography>;
     }
-  };
 
-  const handleUpdate = async (updatedData) => {
-    try {
-      await pb.collection('research_projects')
-        .update(project.id, {
-          related_projects: updatedData.related_projects || relatedProjects.map(proj => proj.id),
-          related_models: updatedData.related_models || relatedModels.map(model => model.id),
-          related_publications: updatedData.related_publications || relatedPublications,
-        });
-      console.log('Project updated successfully');
-    } catch (error) {
-      console.error('Error updating project:', error);
-      alert(`Error updating project: ${error.message}`);
-    }
-  };
-
-  const toggleEdit = (field) => {
-    setEditing((prevState) => ({
-      ...prevState,
-      [field]: !prevState[field],
-    }));
-  };
-
-  const handleChange = (e) => {
-    setProject({ ...project, [e.target.name]: e.target.value });
-  };
-
-  const handleAddRelated = async (item) => {
-    if (searchType === 'project') {
-      const updatedProjects = [...relatedProjects, { id: item.id, title: item.title, description: item.description }];
-      setRelatedProjects(updatedProjects);
-      await handleUpdate({ related_projects: updatedProjects.map(proj => proj.id) });
-    } else if (searchType === 'model') {
-      const updatedModels = [...relatedModels, { id: item.id, name: item.name, description: item.description }];
-      setRelatedModels(updatedModels);
-      await handleUpdate({ related_models: updatedModels.map(model => model.id) });
-    } else if (searchType === 'publication') {
-      const updatedPublications = [...relatedPublications, { title: item.title, link: item.link }];
-      setRelatedPublications(updatedPublications);
-      await handleUpdate({ related_publications: updatedPublications });
-    }
-  };
-
-  const handleDeleteRelated = async (id, type) => {
-    if (type === 'project') {
-      const updatedProjects = relatedProjects.filter((item) => item.id !== id);
-      setRelatedProjects(updatedProjects);
-      await handleUpdate({ related_projects: updatedProjects.map(proj => proj.id) });
-    } else if (type === 'model') {
-      const updatedModels = relatedModels.filter((item) => item.id !== id);
-      setRelatedModels(updatedModels);
-      await handleUpdate({ related_models: updatedModels.map(model => model.id) });
-    } else if (type === 'publication') {
-      const updatedPublications = relatedPublications.filter((item) => item.link !== id);
-      setRelatedPublications(updatedPublications);
-      await handleUpdate({ related_publications: updatedPublications });
-    }
-  };
-
-  const handleOpenSearch = (type) => {
-    setSearchType(type);
-    setSearchOpen(true);
-  };
-
-  const handleCloseSearch = () => {
-    setSearchOpen(false);
-    setSearchTerm('');
-    setSearchResults([]);
-  };
-
-  if (loading) {
-    return <Typography>Loading...</Typography>;
-  }
-
-  if (!project) {
-    return <Typography>No project found</Typography>;
-  }
-
-  return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Box sx={{ backgroundColor: 'grey', padding: 2 }}>
-            <Typography variant="h5" align="center" color="white">
-              <TextField
-                variant="outlined"
-                fullWidth
-                value={project.title}
-                onChange={handleChange}
-                name="title"
-                disabled={!editing.title}
-                InputProps={{
-                  endAdornment: (
-                    <IconButton onClick={() => toggleEdit('title')}>
-                      {editing.title ? <SaveIcon /> : <EditIcon />}
-                    </IconButton>
-                  ),
-                }}
-              />
-            </Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={9}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Box sx={{ backgroundColor: 'lightblue', padding: 2 }}>
-                <Typography variant="h6">
-                  <TextField
+    return (
+        <Box sx={{ flexGrow: 1, p: 3 }}>
+            <Typography variant="h4" align="center">
+                <TextField
                     variant="outlined"
                     fullWidth
-                    multiline
-                    value={project.description}
+                    value={editing ? tempProject.title || '' : project.title}
                     onChange={handleChange}
-                    name="description"
-                    disabled={!editing.description}
-                    InputProps={{
-                      endAdornment: (
-                        <IconButton onClick={() => toggleEdit('description')}>
-                          {editing.description ? <SaveIcon /> : <EditIcon />}
-                        </IconButton>
-                      ),
-                    }}
-                  />
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
-              <Box sx={{ backgroundColor: 'lightblue', padding: 2 }}>
-                <Typography variant="h6">
-                  Project Details
-                  <pre>{JSON.stringify(project.details, null, 2)}</pre>
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={3}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <RelatedProjects
-                relatedProjects={relatedProjects}
-                handleDeleteRelated={handleDeleteRelated}
-                handleOpenSearch={handleOpenSearch}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <RelatedModels
-                relatedModels={relatedModels}
-                handleDeleteRelated={handleDeleteRelated}
-                handleOpenSearch={handleOpenSearch}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Box sx={{ backgroundColor: 'red', padding: 2 }}>
-                <Typography variant="h6" color="white">Linked Datasets</Typography>
-                {/* Linked Datasets implementation */}
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
-              <RelatedPublications
-                relatedPublications={relatedPublications}
-                handleDeleteRelated={handleDeleteRelated}
-                handleOpenSearch={handleOpenSearch}
-              />
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
-
-      <Dialog open={searchOpen} onClose={handleCloseSearch}>
-        <DialogTitle>Search {searchType === 'project' ? 'Research Projects' : searchType === 'model' ? 'AI Models' : 'Publications'}</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Search"
-              fullWidth
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <IconButton onClick={handleSearch}>
-              <SearchIcon />
-            </IconButton>
-          </Box>
-          <List>
-            {searchResults.map((result) => (
-              <ListItem key={result.id || result.link}>
-                <ListItemText
-                  primary={result.title || result.name}
-                  secondary={result.description}
+                    name="title"
+                    disabled={!editing}
                 />
-                <IconButton onClick={() => handleAddRelated(result)}>
-                  <AddIcon />
-                </IconButton>
-              </ListItem>
-            ))}
-          </List>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseSearch} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Button onClick={() => handleUpdate({})} variant="contained" color="primary" sx={{ mt: 2 }}>
-        Save Changes
-      </Button>
-    </Box>
-  );
+            </Typography>
+            <Grid container spacing={2} sx={{ mt: 2 }}>
+                <Grid item xs={12} md={8}>
+                    <TextField
+                        label="Description"
+                        variant="outlined"
+                        fullWidth
+                        multiline
+                        rows={4}
+                        value={editing ? tempProject.description || '' : project.description}
+                        onChange={handleChange}
+                        name="description"
+                        disabled={!editing}
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        label="Status"
+                        variant="outlined"
+                        fullWidth
+                        value={editing ? tempProject.status || '' : project.status}
+                        onChange={handleChange}
+                        name="status"
+                        disabled={!editing}
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        label="Tags"
+                        variant="outlined"
+                        fullWidth
+                        value={editing ? tempProject.tags || '' : project.tags}
+                        onChange={handleChange}
+                        name="tags"
+                        disabled={!editing}
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        label="Details"
+                        variant="outlined"
+                        fullWidth
+                        multiline
+                        rows={4}
+                        value={editing ? tempProject.details || '' : project.details}
+                        onChange={handleChange}
+                        name="details"
+                        disabled={!editing}
+                        sx={{ mb: 2 }}
+                    />
+                    <Typography variant="h6" sx={{ mb: 1 }}>Collaborators</Typography>
+                    <List>
+                        {collaborators.map((collaborator) => (
+                            <ListItem key={collaborator.id}>
+                                <ListItemText primary={collaborator.name} />
+                            </ListItem>
+                        ))}
+                    </List>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                    <Typography variant="h6" sx={{ mb: 1 }}>Related Projects</Typography>
+                    <List>
+                        {relatedProjects.map((project) => (
+                            <ListItem key={project.id}>
+                                <ListItemText primary={project.title} />
+                            </ListItem>
+                        ))}
+                    </List>
+                    <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Related Models</Typography>
+                    <List>
+                        {relatedModels.map((model) => (
+                            <ListItem key={model.id}>
+                                <ListItemText primary={model.name} />
+                            </ListItem>
+                        ))}
+                    </List>
+                    <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Related Publications</Typography>
+                    <List>
+                        {relatedPublications.map((pub, index) => (
+                            <ListItem key={index}>
+                                <ListItemText
+                                    primary={
+                                        <Link href={pub.url} target="_blank" rel="noopener">
+                                            {pub.name}
+                                        </Link>
+                                    }
+                                />
+                            </ListItem>
+                        ))}
+                    </List>
+                </Grid>
+            </Grid>
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+                {editing ? (
+                    <>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<SaveIcon />}
+                            onClick={handleSave}
+                            sx={{ mr: 1 }}
+                        >
+                            Save Changes
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            startIcon={<CancelIcon />}
+                            onClick={handleCancel}
+                        >
+                            Cancel
+                        </Button>
+                    </>
+                ) : (
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<EditIcon />}
+                        onClick={toggleEdit}
+                    >
+                        Edit Page
+                    </Button>
+                )}
+            </Box>
+        </Box>
+    );
 };
 
 export default ResearchPage;

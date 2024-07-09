@@ -1,30 +1,35 @@
 // RelatedPublications.js
 import React from 'react';
-import { Box, Typography, List, ListItem, ListItemText, IconButton } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import { List, ListItem, ListItemText, IconButton, Link } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 
-const RelatedPublications = ({ relatedPublications, handleDeleteRelated, handleOpenSearch }) => (
-    <Box sx={{ backgroundColor: 'red', padding: 2 }}>
-        <Typography variant="h6" color="white">
-            Related Publications
-            < IconButton onClick={() => handleOpenSearch('publication')} color="inherit">
-                <SearchIcon />
+const RelatedPublications = ({ relatedPublications, handleDeleteRelated, handleOpenSearch }) => {
+  return (
+    <div>
+      <h3>Related Publications</h3>
+      <List>
+        {relatedPublications.map((publication, index) => (
+          <ListItem key={index}>
+            <ListItemText
+              primary={
+                <Link href={publication.link} target="_blank" rel="noopener noreferrer">
+                  {publication.title}
+                </Link>
+              }
+            />
+            <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteRelated(publication.link, 'publication')}>
+              <DeleteIcon />
             </IconButton>
-        </Typography>
-        <List>
-            {relatedPublications.map((publication, index) => (
-                <ListItem key={index}>
-                    <ListItemText
-                        primary={<a href={publication.link} target="_blank" rel="noopener noreferrer">{publication.title}</a>}
-                    />
-                    <IconButton onClick={() => handleDeleteRelated(publication.link, 'publication')}>
-                        <DeleteIcon color="error" />
-                    </IconButton>
-                </ListItem>
-            ))}
-        </List>
-    </Box>
-);
+          </ListItem>
+        ))}
+        <ListItem button onClick={() => handleOpenSearch('publication')}>
+          <AddIcon />
+          <ListItemText primary="Add Publication" />
+        </ListItem>
+      </List>
+    </div>
+  );
+};
 
 export default RelatedPublications;

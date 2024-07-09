@@ -1,20 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Typography, List, ListItem, ListItemText, Button, Dialog, DialogActions,
-  DialogContent, DialogTitle, TextField, IconButton, CircularProgress
+  Box, Typography, List, ListItem, ListItemText,
+  Button, Dialog, DialogActions, DialogContent, DialogTitle,
+  TextField, IconButton, InputAdornment, CircularProgress
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../services/pocketbaseClient'; // Make sure to import your Supabase client
+import { pb } from '../services/pocketbaseClient';
 
 const MyModelsPage = () => {
   const { session } = useAuth();
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [newModel, setNewModel] = useState({
+    name: '',
+    description: '',
+    version: '',
+    performance_metrics: '',
+    collaborators: [session?.id || ''],
+    file_url: ''
+  });
   const { register, handleSubmit, reset } = useForm();
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedFileName, setSelectedFileName] = useState('');
@@ -24,13 +37,10 @@ const MyModelsPage = () => {
     const fetchModels = async () => {
       if (session) {
         try {
-          const { data, error } = await supabase
-            .from('models')
-            .select('*')
-            .eq('user_id', session.user.id);
-
-          if (error) throw error;
-          setModels(data || []);
+          const records = await pb.collection('models').getFullList(200, {
+            filter: `collaborators~'${session.id}'`
+          });
+          setModels(records || []);
         } catch (error) {
           console.error('Error fetching models:', error);
         } finally {
@@ -49,6 +59,14 @@ const MyModelsPage = () => {
   const handleClose = () => {
     setOpen(false);
     reset();
+    setNewModel({
+      name: '',
+      description: '',
+      version: '',
+      performance_metrics: '',
+      collaborators: [session?.id || ''],
+      file_url: ''
+    });
     setSelectedFile(null);
     setSelectedFileName('');
     setUploading(false);
@@ -60,24 +78,9 @@ const MyModelsPage = () => {
     setSelectedFileName(file ? file.name : '');
   };
 
-  const handleDelete = async (id, fileUrl) => {
+  const handleDelete = async (id) => {
     try {
-      // Delete the file from Supabase Storage
-      const { error: storageError } = await supabase
-        .storage
-        .from('model-files')
-        .remove([fileUrl]);
-
-      if (storageError) throw storageError;
-
-      // Delete the model entry from the Supabase database
-      const { error } = await supabase
-        .from('models')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
+      await pb.collection('models').delete(id);
       setModels(models.filter(model => model.id !== id));
     } catch (error) {
       console.error('Error deleting model:', error);
@@ -89,34 +92,20 @@ const MyModelsPage = () => {
     if (selectedFile && session) {
       const userId = session.user.id;
       const fileName = `${Date.now()}_${selectedFile.name}`;
-      const filePath = `${userId}/${fileName}`;
 
       setUploading(true);
 
       try {
-        // Upload the file to Supabase Storage
-        const { error: uploadError } = await supabase
-          .storage
-          .from('model-files')
-          .upload(filePath, selectedFile);
+        const formData = new FormData();
+        formData.append('file', selectedFile);
 
-        if (uploadError) throw uploadError;
+        const record = await pb.collection('models').create({
+          ...data,
+          collaborators: [userId],
+          file_url: fileName
+        }, formData);
 
-        // Create the model entry in the Supabase database
-        const { data: modelData, error: insertError } = await supabase
-          .from('models')
-          .insert([
-            {
-              ...data,
-              user_id: userId,
-              file_url: filePath,
-            },
-          ])
-          .single();
-
-        if (insertError) throw insertError;
-
-        setModels(prevModels => [...prevModels, modelData]); // Update the state with the new model
+        setModels(prevModels => [...prevModels, record]);
         handleClose();
       } catch (error) {
         console.error('Error creating model:', error);
@@ -132,6 +121,33 @@ const MyModelsPage = () => {
     alert(`Deploying model: ${model.name}`);
   };
 
+  const handleSearchOpen = () => {
+    setSearchOpen(true);
+  };
+
+  const handleSearchClose = () => {
+    setSearchOpen(false);
+    setSearchResults([]);
+    setSearchQuery('');
+  };
+
+  const handleSearchChange = async (e) => {
+    setSearchQuery(e.target.value);
+    if (e.target.value.trim().length > 2) {
+      const results = await pb.collection('models').getFullList(200, {
+        filter: `name~'${e.target.value}'`
+      });
+      setSearchResults(results);
+    } else {
+      setSearchResults([]);
+    }
+  };
+
+  const handleAddResult = (result) => {
+    setNewModel({ ...newModel, related_models: [...newModel.related_models, result.id] });
+    handleSearchClose();
+  };
+
   if (loading) {
     return <Typography>Loading...</Typography>;
   }
@@ -142,25 +158,26 @@ const MyModelsPage = () => {
       <Button variant="contained" color="success" onClick={handleOpen} sx={{ mb: 2 }}>
         Upload New Model
       </Button>
-      <List>
-        {models.map((model) => (
-          model && (
-            <ListItem key={model.id}>
+      {models.length === 0 ? (
+        <Typography>No models found.</Typography>
+      ) : (
+        <List>
+          {models.map((model) => (
+            <ListItem key={model.id} component={Link} to={`/model/${model.id}`}>
               <ListItemText
                 primary={model.name}
                 secondary={`Version: ${model.version} | Metrics: ${model.performance_metrics}`}
-                component={Link} to={`/model/${model.id}`}
               />
               <IconButton onClick={() => handleDeploy(model)}>
                 <AddIcon color="primary" />
               </IconButton>
-              <IconButton onClick={() => handleDelete(model.id, model.file_url)}>
+              <IconButton onClick={() => handleDelete(model.id)}>
                 <DeleteIcon color="error" />
               </IconButton>
             </ListItem>
-          )
-        ))}
-      </List>
+          ))}
+        </List>
+      )}
 
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Upload New Model</DialogTitle>
@@ -173,7 +190,8 @@ const MyModelsPage = () => {
               name="name"
               fullWidth
               variant="outlined"
-              {...register('name', { required: true })}
+              value={newModel.name}
+              onChange={(e) => setNewModel({ ...newModel, name: e.target.value })}
             />
             <TextField
               margin="dense"
@@ -181,7 +199,10 @@ const MyModelsPage = () => {
               name="description"
               fullWidth
               variant="outlined"
-              {...register('description', { required: true })}
+              multiline
+              rows={4}
+              value={newModel.description}
+              onChange={(e) => setNewModel({ ...newModel, description: e.target.value })}
             />
             <TextField
               margin="dense"
@@ -189,7 +210,8 @@ const MyModelsPage = () => {
               name="version"
               fullWidth
               variant="outlined"
-              {...register('version', { required: true })}
+              value={newModel.version}
+              onChange={(e) => setNewModel({ ...newModel, version: e.target.value })}
             />
             <TextField
               margin="dense"
@@ -197,13 +219,14 @@ const MyModelsPage = () => {
               name="performance_metrics"
               fullWidth
               variant="outlined"
-              {...register('performance_metrics', { required: true })}
+              value={newModel.performance_metrics}
+              onChange={(e) => setNewModel({ ...newModel, performance_metrics: e.target.value })}
             />
             <Button
               variant="contained"
               component="label"
               sx={{ mt: 2 }}
-              disabled={uploading} // Disable button while uploading
+              disabled={uploading}
             >
               Upload File
               <input
@@ -227,6 +250,35 @@ const MyModelsPage = () => {
             </DialogActions>
           </form>
         </DialogContent>
+      </Dialog>
+
+      <Dialog open={searchOpen} onClose={handleSearchClose}>
+        <DialogTitle>Search Models</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Search"
+            fullWidth
+            variant="outlined"
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
+          <List>
+            {searchResults.map((result, index) => (
+              <ListItem button key={index} onClick={() => handleAddResult(result)}>
+                <ListItemText
+                  primary={result.name}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSearchClose} color="primary">
+            Cancel
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );
