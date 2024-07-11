@@ -1,76 +1,77 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, TextField, List, ListItem, ListItemText, IconButton } from '@mui/material';
-import { pb } from '../services/pocketbaseClient';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, List, ListItem, ListItemText, CircularProgress, Typography, IconButton } from '@mui/material';
+import useSearch from '../hooks/useSearch';
+import DeleteIcon from '@mui/icons-material/Delete';
 
-const SearchModal = ({ open, onClose, onAdd, onRemove, type, currentItems }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [results, setResults] = useState([]);
+const SearchModal = ({ open, onClose, onSave, type, initialItems }) => {
+  const { searchTerm, setSearchTerm, searchResults, loading, handleSearch } = useSearch(type);
+  const [selectedItems, setSelectedItems] = useState(initialItems || []);
 
   useEffect(() => {
-    const fetchResults = async () => {
-      if (!searchTerm) return;
-
-      try {
-        let items = [];
-        if (type === 'collaborators') {
-          const response = await pb.collection('users').getList(1, 10, {
-            filter: `name ~ "${searchTerm}"`,
-          });
-          items = response.items;
-        } else {
-          const response = await pb.collection(type).getList(1, 10, {
-            filter: `title ~ "${searchTerm}" || name ~ "${searchTerm}"`,
-          });
-          items = response.items;
-        }
-        setResults(items);
-      } catch (error) {
-        console.error('Error fetching results:', error);
-      }
-    };
-
-    fetchResults();
-  }, [searchTerm, type]);
+    setSelectedItems(initialItems || []);
+  }, [initialItems]);
 
   const handleAdd = (item) => {
-    onAdd(item);
+    if (!selectedItems.some(selectedItem => selectedItem.id === item.id)) {
+      setSelectedItems(prevItems => [...prevItems, item]);
+    }
   };
 
   const handleRemove = (item) => {
-    onRemove(item);
+    setSelectedItems(prevItems => prevItems.filter(i => i.id !== item.id));
+  };
+
+  const handleSave = () => {
+    if (onSave) {
+      onSave(selectedItems);
+    }
+    onClose();
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
-      <Box sx={{ p: 3, bgcolor: 'white', borderRadius: 1, maxWidth: 600, mx: 'auto', my: '10%' }}>
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>Add {type.replace('_', ' ')}</DialogTitle>
+      <DialogContent>
         <TextField
           label="Search"
           variant="outlined"
           fullWidth
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+          sx={{ mb: 2 }}
         />
+        <Button variant="contained" onClick={handleSearch} disabled={loading} sx={{ mb: 2 }}>
+          {loading ? <CircularProgress size={24} /> : 'Search'}
+        </Button>
         <List>
-          {results.map((item) => (
-            <ListItem key={item.id} secondaryAction={
-              currentItems.find(i => i.id === item.id) ? (
-                <IconButton edge="end" aria-label="remove" onClick={() => handleRemove(item)}>
-                  <RemoveIcon />
-                </IconButton>
-              ) : (
-                <IconButton edge="end" aria-label="add" onClick={() => handleAdd(item)}>
-                  <AddIcon />
-                </IconButton>
-              )
-            }>
-              <ListItemText primary={item.name || item.title} />
+          {searchResults.map((result, index) => (
+            <ListItem key={index} button onClick={() => handleAdd(result)}>
+              <ListItemText
+                primary={result.title || result.name}
+                secondary={result.description || result.journal}
+              />
             </ListItem>
           ))}
         </List>
-      </Box>
-    </Modal>
+        <Typography variant="h6">Selected Items:</Typography>
+        <List>
+          {selectedItems.map((item, index) => (
+            <ListItem key={index} secondaryAction={
+              <IconButton edge="end" aria-label="delete" onClick={() => handleRemove(item)}>
+                <DeleteIcon />
+              </IconButton>
+            }>
+              <ListItemText primary={item.title || item.name} secondary={item.description} />
+            </ListItem>
+          ))}
+        </List>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary">Close</Button>
+        <Button onClick={handleSave} color="primary">Save</Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

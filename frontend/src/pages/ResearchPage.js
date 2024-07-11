@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
+import { pb } from '../services/pocketbaseClient';
 import {
-  Box, Grid, Typography, TextField, Button, IconButton, Link, List, ListItem, ListItemText, Card, CardContent, CardActions, Chip
+  Box, Grid, Typography, TextField, Button, IconButton, Link, List, ListItem, ListItemText, Card, CardContent, CardActions, Chip, Avatar
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AddIcon from '@mui/icons-material/Add';
-import { useParams, NavLink } from 'react-router-dom';
+import { useParams, NavLink, useNavigate } from 'react-router-dom';
 import useProject from '../hooks/useProject';
-import { pb } from '../services/pocketbaseClient';
 import SearchModal from '../components/SearchModal';
 
 const statusColors = {
@@ -21,13 +21,14 @@ const statusColors = {
 const ResearchPage = () => {
   const { projectId } = useParams();
   const {
-    project, loading, relatedProjects, relatedModels, relatedPublications, collaborators,
-    setProject
+    project, loading, relatedProjects = [], relatedModels = [], relatedPublications = [], collaborators = [],
+    setProject, fetchProject
   } = useProject(projectId);
   const [editing, setEditing] = useState(false);
   const [tempProject, setTempProject] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
+  const navigate = useNavigate();
 
   const toggleEdit = () => {
     setEditing(!editing);
@@ -54,33 +55,56 @@ const ResearchPage = () => {
   };
 
   const handleChange = (e) => {
-    setTempProject({ ...tempProject, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name.includes('.')) {
+      const [field, index, key] = name.split('.');
+      setTempProject(prevState => {
+        const updatedArray = [...prevState[field] || []];
+        updatedArray[parseInt(index)][key] = value;
+        return { ...prevState, [field]: updatedArray };
+      });
+    } else {
+      setTempProject({ ...tempProject, [name]: value });
+    }
   };
 
   const handleAdd = (item) => {
-    if (modalType === 'collaborators') {
-      setTempProject({ ...tempProject, collaborators: [...(tempProject.collaborators || []), item] });
-    } else if (modalType === 'related_projects') {
-      setTempProject({ ...tempProject, relatedProjects: [...(tempProject.relatedProjects || []), item] });
-    } else if (modalType === 'related_models') {
-      setTempProject({ ...tempProject, relatedModels: [...(tempProject.relatedModels || []), item] });
-    } else if (modalType === 'related_publications') {
-      setTempProject({ ...tempProject, relatedPublications: [...(tempProject.relatedPublications || []), item] });
-    }
+    setTempProject(prevState => {
+      const updatedField = [...(prevState[modalType] || []), item];
+      return { ...prevState, [modalType]: updatedField };
+    });
     setModalOpen(false);
   };
 
   const handleRemove = (item) => {
-    if (modalType === 'collaborators') {
-      setTempProject({ ...tempProject, collaborators: tempProject.collaborators.filter(c => c.id !== item.id) });
-    } else if (modalType === 'related_projects') {
-      setTempProject({ ...tempProject, relatedProjects: tempProject.relatedProjects.filter(p => p.id !== item.id) });
-    } else if (modalType === 'related_models') {
-      setTempProject({ ...tempProject, relatedModels: tempProject.relatedModels.filter(m => m.id !== item.id) });
-    } else if (modalType === 'related_publications') {
-      setTempProject({ ...tempProject, relatedPublications: tempProject.relatedPublications.filter(p => p.id !== item.id) });
-    }
+    setTempProject(prevState => {
+      const updatedField = prevState[modalType].filter(i => i.id !== item.id);
+      return { ...prevState, [modalType]: updatedField };
+    });
     setModalOpen(false);
+  };
+
+  const handleAddDetail = () => {
+    setTempProject(prevState => ({
+      ...prevState,
+      details: [...(prevState.details || []), { key: '', value: '' }]
+    }));
+  };
+
+  const handleAddDataSource = () => {
+    setTempProject(prevState => ({
+      ...prevState,
+      data_sources: [...(prevState.data_sources || []), { key: '', value: '' }]
+    }));
+  };
+
+  const handleNavigation = async (id, type) => {
+    if (type === 'project') {
+      navigate(`/research/${id}`);
+    } else if (type === 'model') {
+      navigate(`/model/${id}`);
+    }
+    await fetchProject(id); // Fetch the project data when navigating
   };
 
   if (loading) {
@@ -91,6 +115,11 @@ const ResearchPage = () => {
     return <Typography>No project found</Typography>;
   }
 
+  const getProfilePictureUrl = (collaborator) => {
+    return collaborator.profile_picture ? 
+      `http://127.0.0.1:8090/api/files/_pb_users_auth_/${collaborator.id}/${collaborator.profile_picture}` : '';
+  };
+
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <SearchModal
@@ -100,6 +129,9 @@ const ResearchPage = () => {
         onRemove={handleRemove}
         type={modalType}
         currentItems={tempProject[modalType] || []}
+        projects={relatedProjects}
+        models={relatedModels}
+        collaborators={collaborators}
       />
       <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
         <CardContent>
@@ -140,15 +172,30 @@ const ResearchPage = () => {
                 <CardContent>
                   <Typography variant="h6" sx={{ mb: 1 }}>Details</Typography>
                   {editing ? (
-                    <TextField
-                      variant="outlined"
-                      fullWidth
-                      multiline
-                      rows={4}
-                      value={tempProject.details || ''}
-                      onChange={handleChange}
-                      name="details"
-                    />
+                    <>
+                      {tempProject.details?.map((detail, index) => (
+                        <Box key={index} sx={{ display: 'flex', mb: 2 }}>
+                          <TextField
+                            variant="outlined"
+                            label="Detail Key"
+                            name={`details.${index}.key`}
+                            value={detail.key}
+                            onChange={handleChange}
+                            sx={{ mr: 2 }}
+                          />
+                          <TextField
+                            variant="outlined"
+                            label="Detail Value"
+                            name={`details.${index}.value`}
+                            value={detail.value}
+                            onChange={handleChange}
+                          />
+                        </Box>
+                      ))}
+                      <Button variant="contained" onClick={handleAddDetail}>
+                        Add Detail
+                      </Button>
+                    </>
                   ) : (
                     <Box>
                       {Array.isArray(project.details) && project.details.map((detail, index) => (
@@ -162,15 +209,30 @@ const ResearchPage = () => {
                 <CardContent>
                   <Typography variant="h6" sx={{ mb: 1 }}>Data Sources</Typography>
                   {editing ? (
-                    <TextField
-                      variant="outlined"
-                      fullWidth
-                      multiline
-                      rows={4}
-                      value={tempProject.data_sources || ''}
-                      onChange={handleChange}
-                      name="data_sources"
-                    />
+                    <>
+                      {tempProject.data_sources?.map((source, index) => (
+                        <Box key={index} sx={{ display: 'flex', mb: 2 }}>
+                          <TextField
+                            variant="outlined"
+                            label="Source Key"
+                            name={`data_sources.${index}.key`}
+                            value={source.key}
+                            onChange={handleChange}
+                            sx={{ mr: 2 }}
+                          />
+                          <TextField
+                            variant="outlined"
+                            label="Source Value"
+                            name={`data_sources.${index}.value`}
+                            value={source.value}
+                            onChange={handleChange}
+                          />
+                        </Box>
+                      ))}
+                      <Button variant="contained" onClick={handleAddDataSource}>
+                        Add Data Source
+                      </Button>
+                    </>
                   ) : (
                     <Box>
                       {Array.isArray(project.data_sources) && project.data_sources.map((source, index) => (
@@ -198,7 +260,11 @@ const ResearchPage = () => {
                     )}
                     {collaborators.map((collaborator) => (
                       <ListItem key={collaborator.id} button component={NavLink} to={`/dashboard/${collaborator.id}`}>
-                        <ListItemText primary={collaborator.name} />
+                        <Avatar alt={collaborator.name} src={getProfilePictureUrl(collaborator)} sx={{ mr: 2 }} />
+                        <ListItemText
+                          primary={collaborator.name}
+                          secondary={collaborator.institution}
+                        />
                       </ListItem>
                     ))}
                   </List>
@@ -246,8 +312,11 @@ const ResearchPage = () => {
                       </ListItem>
                     )}
                     {relatedProjects.map((relatedProject) => (
-                      <ListItem key={relatedProject.id}>
-                        <ListItemText primary={relatedProject.title} />
+                      <ListItem key={relatedProject.id} button onClick={() => handleNavigation(relatedProject.id, 'project')}>
+                        <ListItemText
+                          primary={relatedProject.title}
+                          secondary={relatedProject.description ? `${relatedProject.description.substring(0, 50)}...` : ''}
+                        />
                       </ListItem>
                     ))}
                   </List>
@@ -270,8 +339,11 @@ const ResearchPage = () => {
                       </ListItem>
                     )}
                     {relatedModels.map((model) => (
-                      <ListItem key={model.id}>
-                        <ListItemText primary={model.name} />
+                      <ListItem key={model.id} button onClick={() => handleNavigation(model.id, 'model')}>
+                        <ListItemText
+                          primary={model.name}
+                          secondary={model.description ? `${model.description.substring(0, 50)}...` : ''}
+                        />
                       </ListItem>
                     ))}
                   </List>

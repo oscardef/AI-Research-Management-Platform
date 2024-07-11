@@ -183,6 +183,7 @@ const DashboardPage = () => {
       console.error(`Error deleting ${type}:`, error);
       alert(`Error deleting ${type}: ${error.message}`);
     }
+    setDeleteItem(null);
     setOpenDeleteDialog(false);
   };
 
@@ -298,21 +299,6 @@ const DashboardPage = () => {
     setNewProject({ ...newProject, data_sources: newDataSources });
   };
 
-  const handleAddPublication = (publication) => {
-    if (!newProject.related_publications.some(pub => pub.url === publication.url)) {
-      setNewProject(prevState => ({
-        ...prevState,
-        related_publications: [...prevState.related_publications, publication]
-      }));
-    }
-  };
-
-  const handleRemovePublication = (index) => {
-    const newPublications = [...newProject.related_publications];
-    newPublications.splice(index, 1);
-    setNewProject({ ...newProject, related_publications: newPublications });
-  };
-
   if (loading) {
     return <Typography>Loading...</Typography>;
   }
@@ -378,11 +364,9 @@ const DashboardPage = () => {
         handleDetailChange={handleDetailChange}
         handleAddDataSource={handleAddDataSource}
         handleDataSourceChange={handleDataSourceChange}
-        handleAddPublication={handleAddPublication}
-        handleRemovePublication={handleRemovePublication}
-        filteredUsers={filteredUsers}
         projects={projects}
         models={models}
+        filteredUsers={filteredUsers}
         session={session}
       />
 
