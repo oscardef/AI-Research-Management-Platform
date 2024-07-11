@@ -5,9 +5,11 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import { pb } from '../../services/pocketbaseClient';
+import { useAuth } from '../../context/AuthContext.js'
 
 const NavBar = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const { session } = useAuth();
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -29,7 +31,7 @@ const NavBar = () => {
           <Button component={NavLink} to="/search" color="inherit">
             Search
           </Button>
-          <Button component={NavLink} to="/dashboard" color="inherit">
+          <Button component={NavLink} to={`/dashboard/${session?.id}`} color="inherit">
             Dashboard
           </Button>
         </Box>
@@ -65,7 +67,7 @@ const NavBar = () => {
             <MenuItem component={NavLink} to="/settings">
               Settings
             </MenuItem>
-            <MenuItem component={NavLink} to="/dashboard">
+            <MenuItem component={NavLink} to={`/dashboard/${session?.id}`}>
               <DashboardIcon style={{ marginRight: 8 }} /> Dashboard
             </MenuItem>
             <MenuItem onClick={handleLogout} style={{ color: 'red' }}>

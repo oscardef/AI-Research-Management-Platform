@@ -1,54 +1,77 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box, Typography, List, ListItem, ListItemText,
-  Button, Dialog, DialogActions, DialogContent, DialogTitle,
-  TextField, MenuItem, IconButton, InputAdornment, CircularProgress
-} from '@mui/material';
-import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Box, Typography, Grid, Button, CircularProgress } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { useParams } from 'react-router-dom';
 import { pb } from '../services/pocketbaseClient';
 import { useAuth } from '../context/AuthContext';
-import SearchIcon from '@mui/icons-material/Search';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
+import ProjectCard from '../components/Dashboard/ProjectCard';
+import ModelCard from '../components/Dashboard/ModelCard';
+import DeleteConfirmationDialog from '../components/Dashboard/DeleteConfirmationDialog';
+import ProjectDialog from '../components/Dashboard/ProjectDialog';
+import ModelDialog from '../components/Dashboard/ModelDialog';
 
 const DashboardPage = () => {
   const { session } = useAuth();
+  const { userId } = useParams();
   const [projects, setProjects] = useState([]);
+  const [myProjects, setMyProjects] = useState([]);
   const [models, setModels] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState('');
   const [openProjectDialog, setOpenProjectDialog] = useState(false);
   const [openModelDialog, setOpenModelDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [deleteItem, setDeleteItem] = useState(null);
   const [newProject, setNewProject] = useState({
     title: '',
     description: '',
     status: 'active',
-    tags: '',
+    tags: [],
     related_projects: [],
     related_models: [],
-    related_publications: []
+    related_publications: [],
+    public: false
   });
   const [newModel, setNewModel] = useState({
     name: '',
     description: '',
     version: '',
-    performance_metrics: '',
-    collaborators: [session?.id || ''],
-    file_url: ''
+    performance_metrics: [],
+    hyperparameters: [],
+    status: 'active',
+    collaborators: [{ id: session?.id, name: session?.name }],
+    related_projects: [],
+    related_models: [],
+    tags: [],
+    public: false
   });
-  const { register, handleSubmit, reset } = useForm();
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedFileName, setSelectedFileName] = useState('');
   const [uploading, setUploading] = useState(false);
 
+  const isOwnPage = session?.id === userId;
+
   useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = await pb.collection('users').getOne(userId);
+        setUserName(user.name);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
     const fetchProjects = async () => {
-      if (session) {
+      if (userId) {
         try {
           const projectsData = await pb.collection('research_projects').getFullList(200, {
-            filter: `collaborators~'${session.id}'`
+            filter: `(public=true || collaborators~'${userId}')`
           });
           setProjects(projectsData);
+          const myProjects = projectsData.filter(project => project.collaborators.includes(userId));
+          setMyProjects(myProjects);
         } catch (error) {
           console.error('Error fetching projects:', error);
         }
@@ -56,10 +79,10 @@ const DashboardPage = () => {
     };
 
     const fetchModels = async () => {
-      if (session) {
+      if (userId) {
         try {
           const records = await pb.collection('models').getFullList(200, {
-            filter: `collaborators~'${session.id}'`
+            filter: `(public=true || collaborators~'${userId}')`
           });
           setModels(records || []);
         } catch (error) {
@@ -68,10 +91,23 @@ const DashboardPage = () => {
       }
     };
 
+    const fetchUsers = async () => {
+      try {
+        const usersData = await pb.collection('users').getFullList(200);
+        setAllUsers(usersData);
+        const filtered = usersData.filter(user => user.id !== session?.id);
+        setFilteredUsers(filtered);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchUserData();
     fetchProjects();
     fetchModels();
+    fetchUsers();
     setLoading(false);
-  }, [session]);
+  }, [userId, session?.id]);
 
   const handleOpenProjectDialog = () => {
     setOpenProjectDialog(true);
@@ -83,10 +119,11 @@ const DashboardPage = () => {
       title: '',
       description: '',
       status: 'active',
-      tags: '',
+      tags: [],
       related_projects: [],
       related_models: [],
-      related_publications: []
+      related_publications: [],
+      public: false
     });
   };
 
@@ -96,14 +133,18 @@ const DashboardPage = () => {
 
   const handleCloseModelDialog = () => {
     setOpenModelDialog(false);
-    reset();
     setNewModel({
       name: '',
       description: '',
       version: '',
-      performance_metrics: '',
-      collaborators: [session?.id || ''],
-      file_url: ''
+      status: 'active',
+      performance_metrics: [],
+      hyperparameters: [],
+      related_projects: [],
+      related_models: [],
+      tags: [],
+      collaborators: [{ id: session?.id, name: session?.name }],
+      public: false
     });
     setSelectedFile(null);
     setSelectedFileName('');
@@ -116,24 +157,29 @@ const DashboardPage = () => {
     setSelectedFileName(file ? file.name : '');
   };
 
-  const handleDeleteModel = async (id) => {
-    try {
-      await pb.collection('models').delete(id);
-      setModels(models.filter(model => model.id !== id));
-    } catch (error) {
-      console.error('Error deleting model:', error);
-      alert(`Error deleting model: ${error.message}`);
-    }
+  const handleDelete = (item, type) => {
+    setDeleteItem({ item, type });
+    setOpenDeleteDialog(true);
   };
 
-  const handleDeleteProject = async (id) => {
+  const handleDeleteConfirm = async () => {
+    const { item, type } = deleteItem;
     try {
-      await pb.collection('research_projects').delete(id);
-      setProjects(projects.filter(project => project.id !== id));
+      console.log("item: ", item);
+      if (type === 'model') {
+        await pb.collection('models').delete(item.id);
+        setModels(models.filter(model => model.id !== item.id));
+      } else {
+        await pb.collection('research_projects').delete(item.id);
+        setProjects(projects.filter(project => project.id !== item.id));
+        setMyProjects(myProjects.filter(project => project.id !== item.id));
+      }
     } catch (error) {
-      console.error('Error deleting project:', error);
-      alert(`Error deleting project: ${error.message}`);
+      console.error(`Error deleting ${type}:`, error);
+      alert(`Error deleting ${type}: ${error.message}`);
     }
+    setDeleteItem(null);
+    setOpenDeleteDialog(false);
   };
 
   const handleCreateProject = async () => {
@@ -141,16 +187,18 @@ const DashboardPage = () => {
       title: newProject.title,
       description: newProject.description,
       status: newProject.status,
-      tags: newProject.tags.split(',').map(tag => tag.trim()),
+      tags: newProject.tags,
       related_projects: newProject.related_projects,
       related_models: newProject.related_models,
       related_publications: newProject.related_publications,
       collaborators: [session.id],
+      public: newProject.public
     };
 
     try {
       const createdProject = await pb.collection('research_projects').create(projectData);
       setProjects([...projects, createdProject]);
+      setMyProjects([...myProjects, createdProject]);
       handleCloseProjectDialog();
     } catch (error) {
       console.error('Error creating project:', error);
@@ -158,22 +206,27 @@ const DashboardPage = () => {
     }
   };
 
-  const onSubmitModel = async (data) => {
+  const handleCreateModel = async () => {
     if (selectedFile && session) {
-      const userId = session.user.id;
-      const fileName = `${Date.now()}_${selectedFile.name}`;
-
       setUploading(true);
 
       try {
-        const formData = new FormData();
-        formData.append('file', selectedFile);
+        const modelData = {
+          name: newModel.name,
+          description: newModel.description,
+          version: newModel.version,
+          performance_metrics: JSON.stringify(newModel.performance_metrics),
+          hyperparameters: JSON.stringify(newModel.hyperparameters),
+          related_projects: newModel.related_projects.map(project => project.id),
+          related_models: newModel.related_models.map(model => model.id),
+          tags: newModel.tags,
+          collaborators: newModel.collaborators.map(collab => collab.id),
+          public: newModel.public,
+          status: newModel.status,
+          files: selectedFile
+        };
 
-        const record = await pb.collection('models').create({
-          ...data,
-          collaborators: [userId],
-          file_url: fileName
-        }, formData);
+        const record = await pb.collection('models').create(modelData);
 
         setModels(prevModels => [...prevModels, record]);
         handleCloseModelDialog();
@@ -187,193 +240,117 @@ const DashboardPage = () => {
     }
   };
 
+  const handleAddHyperparameter = () => {
+    setNewModel(prevState => ({
+      ...prevState,
+      hyperparameters: [...prevState.hyperparameters, { key: '', value: '' }]
+    }));
+  };
+
+  const handleHyperparameterChange = (index, field, value) => {
+    const newHyperparameters = [...newModel.hyperparameters];
+    newHyperparameters[index][field] = value;
+    setNewModel({ ...newModel, hyperparameters: newHyperparameters });
+  };
+
+  const handleAddPerformanceMetric = () => {
+    setNewModel(prevState => ({
+      ...prevState,
+      performance_metrics: [...prevState.performance_metrics, { key: '', value: '' }]
+    }));
+  };
+
+  const handlePerformanceMetricChange = (index, field, value) => {
+    const newPerformanceMetrics = [...newModel.performance_metrics];
+    newPerformanceMetrics[index][field] = value;
+    setNewModel({ ...newModel, performance_metrics: newPerformanceMetrics });
+  };
+
   if (loading) {
     return <Typography>Loading...</Typography>;
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'row', p: 3 }}>
-      <Box sx={{ flexGrow: 1, mr: 2 }}>
-        <Typography variant="h4">My Research Projects</Typography>
-        <Button variant="contained" color="success" onClick={handleOpenProjectDialog} sx={{ mb: 2 }}>
-          Create Research Project
-        </Button>
-        {projects.length === 0 ? (
-          <Typography>No projects found.</Typography>
-        ) : (
-          <List>
-            {projects.map((project) => (
-              <ListItem key={project.id} component={Link} to={`/research/${project.id}`}>
-                <ListItemText
-                  primary={project.title}
-                  secondary={project.description}
-                />
-                <IconButton onClick={() => handleDeleteProject(project.id)}>
-                  <DeleteIcon color="error" />
-                </IconButton>
-              </ListItem>
-            ))}
-          </List>
-        )}
-      </Box>
-
-      <Box sx={{ flexGrow: 1 }}>
-        <Typography variant="h4">My Models</Typography>
-        <Button variant="contained" color="success" onClick={handleOpenModelDialog} sx={{ mb: 2 }}>
-          Upload New Model
-        </Button>
-        {models.length === 0 ? (
-          <Typography>No models found.</Typography>
-        ) : (
-          <List>
-            {models.map((model) => (
-              <ListItem key={model.id} component={Link} to={`/model/${model.id}`}>
-                <ListItemText
-                  primary={model.name}
-                  secondary={`Version: ${model.version} | Metrics: ${model.performance_metrics}`}
-                />
-                <IconButton onClick={() => handleDeleteModel(model.id)}>
-                  <DeleteIcon color="error" />
-                </IconButton>
-              </ListItem>
-            ))}
-          </List>
-        )}
-      </Box>
-
-      {/* Project Dialog */}
-      <Dialog open={openProjectDialog} onClose={handleCloseProjectDialog}>
-        <DialogTitle>Create Research Project</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Title"
-            name="title"
-            fullWidth
-            variant="outlined"
-            value={newProject.title}
-            onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
+    <Box sx={{ display: 'flex', flexDirection: 'column', p: 3 }}>
+      <Typography variant="h4" align="center" sx={{ mb: 4 }}>
+        {isOwnPage ? 'My Dashboard' : `${userName}'s Dashboard`}
+      </Typography>
+      <Grid container spacing={4}>
+        <Grid item xs={12} md={6}>
+          <ProjectCard
+            projects={myProjects}
+            isOwnPage={isOwnPage}
+            handleDelete={handleDelete}
+            setOpenDeleteDialog={setOpenDeleteDialog}
+            setDeletionTarget={setDeleteItem}
           />
-          <TextField
-            margin="dense"
-            label="Description"
-            name="description"
-            fullWidth
-            variant="outlined"
-            multiline
-            rows={4}
-            value={newProject.description}
-            onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-          />
-          <TextField
-            select
-            margin="dense"
-            label="Status"
-            name="status"
-            fullWidth
-            variant="outlined"
-            value={newProject.status}
-            onChange={(e) => setNewProject({ ...newProject, status: e.target.value })}
-          >
-            <MenuItem value="active">Active</MenuItem>
-            <MenuItem value="complete">Complete</MenuItem>
-            <MenuItem value="inactive">Inactive</MenuItem>
-            <MenuItem value="pending">Pending</MenuItem>
-          </TextField>
-          <TextField
-            margin="dense"
-            label="Tags (comma separated)"
-            name="tags"
-            fullWidth
-            variant="outlined"
-            value={newProject.tags}
-            onChange={(e) => setNewProject({ ...newProject, tags: e.target.value })}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseProjectDialog} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleCreateProject} color="primary">
-            Create
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Model Dialog */}
-      <Dialog open={openModelDialog} onClose={handleCloseModelDialog}>
-        <DialogTitle>Upload New Model</DialogTitle>
-        <DialogContent>
-          <form onSubmit={handleSubmit(onSubmitModel)}>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Model Name"
-              name="name"
-              fullWidth
-              variant="outlined"
-              value={newModel.name}
-              onChange={(e) => setNewModel({ ...newModel, name: e.target.value })}
-            />
-            <TextField
-              margin="dense"
-              label="Description"
-              name="description"
-              fullWidth
-              variant="outlined"
-              multiline
-              rows={4}
-              value={newModel.description}
-              onChange={(e) => setNewModel({ ...newModel, description: e.target.value })}
-            />
-            <TextField
-              margin="dense"
-              label="Version"
-              name="version"
-              fullWidth
-              variant="outlined"
-              value={newModel.version}
-              onChange={(e) => setNewModel({ ...newModel, version: e.target.value })}
-            />
-            <TextField
-              margin="dense"
-              label="Performance Metrics"
-              name="performance_metrics"
-              fullWidth
-              variant="outlined"
-              value={newModel.performance_metrics}
-              onChange={(e) => setNewModel({ ...newModel, performance_metrics: e.target.value })}
-            />
+          {isOwnPage && (
             <Button
               variant="contained"
-              component="label"
-              sx={{ mt: 2 }}
-              disabled={uploading}
+              color="primary"
+              onClick={handleOpenProjectDialog}
+              startIcon={<AddIcon />}
+              sx={{ mb: 2 }}
             >
-              Upload File
-              <input
-                type="file"
-                hidden
-                onChange={handleFileChange}
-              />
+              Create Research Project
             </Button>
-            {selectedFileName && (
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                Selected file: {selectedFileName}
-              </Typography>
-            )}
-            <DialogActions>
-              <Button onClick={handleCloseModelDialog} color="primary" disabled={uploading}>
-                Cancel
-              </Button>
-              <Button type="submit" color="primary" disabled={uploading}>
-                {uploading ? <CircularProgress size={24} /> : 'Upload'}
-              </Button>
-            </DialogActions>
-          </form>
-        </DialogContent>
-      </Dialog>
+          )}
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <ModelCard
+            models={models}
+            isOwnPage={isOwnPage}
+            handleDelete={handleDelete}
+            setOpenDeleteDialog={setOpenDeleteDialog}
+            setDeletionTarget={setDeleteItem}
+          />
+          {isOwnPage && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleOpenModelDialog}
+              startIcon={<AddIcon />}
+              sx={{ mb: 2 }}
+            >
+              Upload New Model
+            </Button>
+          )}
+        </Grid>
+      </Grid>
+
+      <DeleteConfirmationDialog
+        open={openDeleteDialog}
+        handleClose={() => setOpenDeleteDialog(false)}
+        handleConfirm={handleDeleteConfirm}
+        deleteItem={deleteItem?.item}
+      />
+
+      <ProjectDialog
+        open={openProjectDialog}
+        handleClose={handleCloseProjectDialog}
+        handleCreate={handleCreateProject}
+        newProject={newProject}
+        setNewProject={setNewProject}
+      />
+
+      <ModelDialog
+        open={openModelDialog}
+        handleClose={handleCloseModelDialog}
+        handleCreate={handleCreateModel}
+        newModel={newModel}
+        setNewModel={setNewModel}
+        handleAddPerformanceMetric={handleAddPerformanceMetric}
+        handlePerformanceMetricChange={handlePerformanceMetricChange}
+        handleAddHyperparameter={handleAddHyperparameter}
+        handleHyperparameterChange={handleHyperparameterChange}
+        handleFileChange={handleFileChange}
+        selectedFileName={selectedFileName}
+        uploading={uploading}
+        projects={projects}
+        models={models}
+        filteredUsers={filteredUsers}
+        session={session}
+      />
     </Box>
   );
 };
