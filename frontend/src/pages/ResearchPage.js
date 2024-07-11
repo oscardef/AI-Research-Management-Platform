@@ -10,11 +10,12 @@ import { useParams, NavLink } from 'react-router-dom';
 import useProject from '../hooks/useProject';
 import { pb } from '../services/pocketbaseClient';
 import SearchModal from '../components/SearchModal';
-import md5 from 'md5';
 
-const getColorFromString = (str) => {
-  const hash = md5(str);
-  return `#${hash.slice(0, 6)}`;
+const statusColors = {
+  active: 'green',
+  complete: 'blue',
+  inactive: 'grey',
+  pending: 'orange',
 };
 
 const ResearchPage = () => {
@@ -100,7 +101,7 @@ const ResearchPage = () => {
         type={modalType}
         currentItems={tempProject[modalType] || []}
       />
-      <Card variant="outlined">
+      <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
         <CardContent>
           <Typography variant="h4" align="center" gutterBottom>
             {editing ? (
@@ -117,150 +118,196 @@ const ResearchPage = () => {
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} md={8}>
-              <Typography variant="h6" sx={{ mb: 1 }}>Description</Typography>
-              {editing ? (
-                <TextField
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={4}
-                  value={tempProject.description || ''}
-                  onChange={handleChange}
-                  name="description"
-                />
-              ) : (
-                <Typography variant="body1" paragraph>{project.description}</Typography>
-              )}
-              <Typography variant="h6" sx={{ mb: 1 }}>Status</Typography>
-              {editing ? (
-                <TextField
-                  variant="outlined"
-                  fullWidth
-                  value={tempProject.status || ''}
-                  onChange={handleChange}
-                  name="status"
-                />
-              ) : (
-                <Typography variant="body1" paragraph>{project.status}</Typography>
-              )}
-              <Typography variant="h6" sx={{ mb: 1 }}>Tags</Typography>
-              {editing ? (
-                <TextField
-                  variant="outlined"
-                  fullWidth
-                  value={tempProject.tags || ''}
-                  onChange={handleChange}
-                  name="tags"
-                />
-              ) : (
-                <Box>
-                  {Array.isArray(project.tags) && project.tags.map((tag, index) => (
-                    <Chip key={index} label={tag} sx={{ mr: 1, mb: 1, bgcolor: getColorFromString(tag), color: 'white' }} />
-                  ))}
-                </Box>
-              )}
-              <Typography variant="h6" sx={{ mb: 1 }}>Details</Typography>
-              {editing ? (
-                <TextField
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={4}
-                  value={tempProject.details || ''}
-                  onChange={handleChange}
-                  name="details"
-                />
-              ) : (
-                <Typography variant="body1" paragraph>{project.details}</Typography>
-              )}
-              <Typography variant="h6" sx={{ mb: 1 }}>Collaborators</Typography>
-              <List>
-                {editing && (
-                  <ListItem>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => { setModalType('collaborators'); setModalOpen(true); }}
-                      startIcon={<AddIcon />}
-                    >
-                      Add Collaborator
-                    </Button>
-                  </ListItem>
-                )}
-                {collaborators.map((collaborator) => (
-                  <ListItem key={collaborator.id} button component={NavLink} to={`/dashboard/${collaborator.id}`}>
-                    <ListItemText primary={collaborator.name} />
-                  </ListItem>
-                ))}
-              </List>
+              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Description</Typography>
+                  {editing ? (
+                    <TextField
+                      variant="outlined"
+                      fullWidth
+                      multiline
+                      rows={4}
+                      value={tempProject.description || ''}
+                      onChange={handleChange}
+                      name="description"
+                    />
+                  ) : (
+                    <Typography variant="body1" paragraph>{project.description}</Typography>
+                  )}
+                </CardContent>
+              </Card>
+              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Details</Typography>
+                  {editing ? (
+                    <TextField
+                      variant="outlined"
+                      fullWidth
+                      multiline
+                      rows={4}
+                      value={tempProject.details || ''}
+                      onChange={handleChange}
+                      name="details"
+                    />
+                  ) : (
+                    <Box>
+                      {Array.isArray(project.details) && project.details.map((detail, index) => (
+                        <Typography key={index} variant="body1" paragraph>{`${detail.key}: ${detail.value}`}</Typography>
+                      ))}
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Data Sources</Typography>
+                  {editing ? (
+                    <TextField
+                      variant="outlined"
+                      fullWidth
+                      multiline
+                      rows={4}
+                      value={tempProject.data_sources || ''}
+                      onChange={handleChange}
+                      name="data_sources"
+                    />
+                  ) : (
+                    <Box>
+                      {Array.isArray(project.data_sources) && project.data_sources.map((source, index) => (
+                        <Typography key={index} variant="body1" paragraph>{`${source.key}: ${source.value}`}</Typography>
+                      ))}
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Collaborators</Typography>
+                  <List>
+                    {editing && (
+                      <ListItem>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => { setModalType('collaborators'); setModalOpen(true); }}
+                          startIcon={<AddIcon />}
+                        >
+                          Add Collaborator
+                        </Button>
+                      </ListItem>
+                    )}
+                    {collaborators.map((collaborator) => (
+                      <ListItem key={collaborator.id} button component={NavLink} to={`/dashboard/${collaborator.id}`}>
+                        <ListItemText primary={collaborator.name} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Card>
             </Grid>
             <Grid item xs={12} md={4}>
-              <Typography variant="h6" sx={{ mb: 1 }}>Related Projects</Typography>
-              <List>
-                {editing && (
-                  <ListItem>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => { setModalType('related_projects'); setModalOpen(true); }}
-                      startIcon={<AddIcon />}
-                    >
-                      Add Project
-                    </Button>
-                  </ListItem>
-                )}
-                {relatedProjects.map((relatedProject) => (
-                  <ListItem key={relatedProject.id}>
-                    <ListItemText primary={relatedProject.title} />
-                  </ListItem>
-                ))}
-              </List>
-              <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Related Models</Typography>
-              <List>
-                {editing && (
-                  <ListItem>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => { setModalType('related_models'); setModalOpen(true); }}
-                      startIcon={<AddIcon />}
-                    >
-                      Add Model
-                    </Button>
-                  </ListItem>
-                )}
-                {relatedModels.map((model) => (
-                  <ListItem key={model.id}>
-                    <ListItemText primary={model.name} />
-                  </ListItem>
-                ))}
-              </List>
-              <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Related Publications</Typography>
-              <List>
-                {editing && (
-                  <ListItem>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => { setModalType('related_publications'); setModalOpen(true); }}
-                      startIcon={<AddIcon />}
-                    >
-                      Add Publication
-                    </Button>
-                  </ListItem>
-                )}
-                {relatedPublications.map((pub, index) => (
-                  <ListItem key={index}>
-                    <ListItemText
-                      primary={
-                        <Link href={pub.url} target="_blank" rel="noopener">
-                          {pub.name}
-                        </Link>
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
+              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Status</Typography>
+                  <Chip
+                    label={project.status}
+                    sx={{
+                      bgcolor: statusColors[project.status],
+                      color: 'white',
+                      mb: 1,
+                    }}
+                  />
+                </CardContent>
+              </Card>
+              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Tags</Typography>
+                  <Box>
+                    {Array.isArray(project.tags) && project.tags.map((tag, index) => (
+                      <Chip key={index} label={tag} sx={{ mr: 1, mb: 1, bgcolor: 'primary.main', color: 'white' }} />
+                    ))}
+                  </Box>
+                </CardContent>
+              </Card>
+              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Related Projects</Typography>
+                  <List>
+                    {editing && (
+                      <ListItem>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => { setModalType('related_projects'); setModalOpen(true); }}
+                          startIcon={<AddIcon />}
+                        >
+                          Add Project
+                        </Button>
+                      </ListItem>
+                    )}
+                    {relatedProjects.map((relatedProject) => (
+                      <ListItem key={relatedProject.id}>
+                        <ListItemText primary={relatedProject.title} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Card>
+              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Related Models</Typography>
+                  <List>
+                    {editing && (
+                      <ListItem>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => { setModalType('related_models'); setModalOpen(true); }}
+                          startIcon={<AddIcon />}
+                        >
+                          Add Model
+                        </Button>
+                      </ListItem>
+                    )}
+                    {relatedModels.map((model) => (
+                      <ListItem key={model.id}>
+                        <ListItemText primary={model.name} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Card>
+              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Related Publications</Typography>
+                  <List>
+                    {editing && (
+                      <ListItem>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => { setModalType('related_publications'); setModalOpen(true); }}
+                          startIcon={<AddIcon />}
+                        >
+                          Add Publication
+                        </Button>
+                      </ListItem>
+                    )}
+                    {relatedPublications.map((pub, index) => (
+                      <ListItem key={index}>
+                        <ListItemText
+                          primary={
+                            <Link href={pub.url} target="_blank" rel="noopener">
+                              {pub.title.length > 50 ? `${pub.title.substring(0, 50)}...` : pub.title}
+                            </Link>
+                          }
+                          secondary={`Source: ${pub.journal}`}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Card>
             </Grid>
           </Grid>
         </CardContent>

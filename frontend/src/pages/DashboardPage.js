@@ -32,6 +32,9 @@ const DashboardPage = () => {
     related_projects: [],
     related_models: [],
     related_publications: [],
+    collaborators: [{ id: session?.id, name: session?.name }],
+    details: [],
+    data_sources: [],
     public: false
   });
   const [newModel, setNewModel] = useState({
@@ -123,6 +126,9 @@ const DashboardPage = () => {
       related_projects: [],
       related_models: [],
       related_publications: [],
+      collaborators: [{ id: session?.id, name: session?.name }],
+      details: [],
+      data_sources: [],
       public: false
     });
   };
@@ -165,7 +171,6 @@ const DashboardPage = () => {
   const handleDeleteConfirm = async () => {
     const { item, type } = deleteItem;
     try {
-      console.log("item: ", item);
       if (type === 'model') {
         await pb.collection('models').delete(item.id);
         setModels(models.filter(model => model.id !== item.id));
@@ -178,7 +183,6 @@ const DashboardPage = () => {
       console.error(`Error deleting ${type}:`, error);
       alert(`Error deleting ${type}: ${error.message}`);
     }
-    setDeleteItem(null);
     setOpenDeleteDialog(false);
   };
 
@@ -188,10 +192,12 @@ const DashboardPage = () => {
       description: newProject.description,
       status: newProject.status,
       tags: newProject.tags,
-      related_projects: newProject.related_projects,
-      related_models: newProject.related_models,
+      related_projects: newProject.related_projects.map(project => project.id),
+      related_models: newProject.related_models.map(model => model.id),
       related_publications: newProject.related_publications,
-      collaborators: [session.id],
+      collaborators: newProject.collaborators.map(collab => collab.id),
+      details: newProject.details,
+      data_sources: newProject.data_sources,
       public: newProject.public
     };
 
@@ -266,6 +272,47 @@ const DashboardPage = () => {
     setNewModel({ ...newModel, performance_metrics: newPerformanceMetrics });
   };
 
+  const handleAddDetail = () => {
+    setNewProject(prevState => ({
+      ...prevState,
+      details: [...prevState.details, { key: '', value: '' }]
+    }));
+  };
+
+  const handleDetailChange = (index, field, value) => {
+    const newDetails = [...newProject.details];
+    newDetails[index][field] = value;
+    setNewProject({ ...newProject, details: newDetails });
+  };
+
+  const handleAddDataSource = () => {
+    setNewProject(prevState => ({
+      ...prevState,
+      data_sources: [...prevState.data_sources, { key: '', value: '' }]
+    }));
+  };
+
+  const handleDataSourceChange = (index, field, value) => {
+    const newDataSources = [...newProject.data_sources];
+    newDataSources[index][field] = value;
+    setNewProject({ ...newProject, data_sources: newDataSources });
+  };
+
+  const handleAddPublication = (publication) => {
+    if (!newProject.related_publications.some(pub => pub.url === publication.url)) {
+      setNewProject(prevState => ({
+        ...prevState,
+        related_publications: [...prevState.related_publications, publication]
+      }));
+    }
+  };
+
+  const handleRemovePublication = (index) => {
+    const newPublications = [...newProject.related_publications];
+    newPublications.splice(index, 1);
+    setNewProject({ ...newProject, related_publications: newPublications });
+  };
+
   if (loading) {
     return <Typography>Loading...</Typography>;
   }
@@ -281,8 +328,6 @@ const DashboardPage = () => {
             projects={myProjects}
             isOwnPage={isOwnPage}
             handleDelete={handleDelete}
-            setOpenDeleteDialog={setOpenDeleteDialog}
-            setDeletionTarget={setDeleteItem}
           />
           {isOwnPage && (
             <Button
@@ -301,8 +346,6 @@ const DashboardPage = () => {
             models={models}
             isOwnPage={isOwnPage}
             handleDelete={handleDelete}
-            setOpenDeleteDialog={setOpenDeleteDialog}
-            setDeletionTarget={setDeleteItem}
           />
           {isOwnPage && (
             <Button
@@ -331,6 +374,16 @@ const DashboardPage = () => {
         handleCreate={handleCreateProject}
         newProject={newProject}
         setNewProject={setNewProject}
+        handleAddDetail={handleAddDetail}
+        handleDetailChange={handleDetailChange}
+        handleAddDataSource={handleAddDataSource}
+        handleDataSourceChange={handleDataSourceChange}
+        handleAddPublication={handleAddPublication}
+        handleRemovePublication={handleRemovePublication}
+        filteredUsers={filteredUsers}
+        projects={projects}
+        models={models}
+        session={session}
       />
 
       <ModelDialog
