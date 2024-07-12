@@ -1,14 +1,46 @@
-import React from 'react';
-import { Card, CardContent, Typography, List, ListItem, ListItemText, Button, Chip, Link } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, Typography, List, ListItem, ListItemText, Button, Chip, Link, IconButton, Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { pb } from '../services/pocketbaseClient';
 
-const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, project, editing, handleNavigation, openModal }) => {
+const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, project, editing, handleNavigation, openModal, handleRemoveRelatedItem }) => {
+  const [projectDetails, setProjectDetails] = useState([]);
+  const [modelDetails, setModelDetails] = useState([]);
+  const [publicationDetails, setPublicationDetails] = useState([]);
+
+  const fetchDetails = async () => {
+    try {
+      const projects = await Promise.all(
+        project.related_projects.map(id => pb.collection('research_projects').getOne(id))
+      );
+      const models = await Promise.all(
+        project.related_models.map(id => pb.collection('models').getOne(id))
+      );
+      setProjectDetails(projects);
+      setModelDetails(models);
+      setPublicationDetails(project.related_publications);
+    } catch (error) {
+      console.error('Error fetching details:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (editing) {
+      fetchDetails();
+    }
+  }, [editing, project.related_projects, project.related_models, project.related_publications]);
+
   const statusColors = {
     active: 'green',
     complete: 'blue',
     inactive: 'grey',
     pending: 'orange',
   };
+
+  const displayProjects = editing ? projectDetails : relatedProjects;
+  const displayModels = editing ? modelDetails : relatedModels;
+  const displayPublications = editing ? publicationDetails : relatedPublications;
 
   return (
     <>
@@ -28,11 +60,11 @@ const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, pro
       <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
         <CardContent>
           <Typography variant="h6" sx={{ mb: 1 }}>Tags</Typography>
-          <List>
+          <Box>
             {Array.isArray(project.tags) && project.tags.map((tag, index) => (
               <Chip key={index} label={tag} sx={{ mr: 1, mb: 1, bgcolor: 'primary.main', color: 'white' }} />
             ))}
-          </List>
+          </Box>
         </CardContent>
       </Card>
       <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
@@ -52,12 +84,19 @@ const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, pro
                 </Button>
               </ListItem>
             )}
-            {relatedProjects.map((relatedProject) => (
-              <ListItem key={relatedProject.id} button onClick={() => handleNavigation(relatedProject.id, 'project')}>
-                <ListItemText
-                  primary={relatedProject.title}
-                  secondary={relatedProject.description ? `${relatedProject.description.substring(0, 50)}...` : ''}
-                />
+            {displayProjects.map((relatedProject) => (
+              <ListItem key={relatedProject.id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Box sx={{ flexGrow: 1 }} onClick={() => handleNavigation(relatedProject.id, 'project')} style={{ cursor: 'pointer' }}>
+                  <ListItemText
+                    primary={relatedProject.title}
+                    secondary={relatedProject.description ? `${relatedProject.description.substring(0, 50)}...` : ''}
+                  />
+                </Box>
+                {editing && (
+                  <IconButton edge="end" aria-label="delete" onClick={(e) => { e.stopPropagation(); handleRemoveRelatedItem('related_projects', relatedProject.id); }}>
+                    <DeleteIcon />
+                  </IconButton>
+                )}
               </ListItem>
             ))}
           </List>
@@ -80,12 +119,19 @@ const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, pro
                 </Button>
               </ListItem>
             )}
-            {relatedModels.map((model) => (
-              <ListItem key={model.id} button onClick={() => handleNavigation(model.id, 'model')}>
-                <ListItemText
-                  primary={model.name}
-                  secondary={model.description ? `${model.description.substring(0, 50)}...` : ''}
-                />
+            {displayModels.map((model) => (
+              <ListItem key={model.id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Box sx={{ flexGrow: 1 }} onClick={() => handleNavigation(model.id, 'model')} style={{ cursor: 'pointer' }}>
+                  <ListItemText
+                    primary={model.name}
+                    secondary={model.description ? `${model.description.substring(0, 50)}...` : ''}
+                  />
+                </Box>
+                {editing && (
+                  <IconButton edge="end" aria-label="delete" onClick={(e) => { e.stopPropagation(); handleRemoveRelatedItem('related_models', model.id); }}>
+                    <DeleteIcon />
+                  </IconButton>
+                )}
               </ListItem>
             ))}
           </List>
@@ -108,21 +154,28 @@ const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, pro
                 </Button>
               </ListItem>
             )}
-            {relatedPublications.map((pub, index) => (
+            {displayPublications.map((pub, index) => (
               pub && pub.title ? (
-                <ListItem key={index}>
-                  <ListItemText
-                    primary={
-                      pub.url ? (
-                        <Link href={pub.url} target="_blank" rel="noopener">
-                          {pub.title.length > 50 ? `${pub.title.substring(0, 50)}...` : pub.title}
-                        </Link>
-                      ) : (
-                        pub.title.length > 50 ? `${pub.title.substring(0, 50)}...` : pub.title
-                      )
-                    }
-                    secondary={`Source: ${pub.journal}`}
-                  />
+                <ListItem key={pub.url} sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <ListItemText
+                      primary={
+                        pub.url ? (
+                          <Link href={pub.url} target="_blank" rel="noopener">
+                            {pub.title.length > 50 ? `${pub.title.substring(0, 50)}...` : pub.title}
+                          </Link>
+                        ) : (
+                          pub.title.length > 50 ? `${pub.title.substring(0, 50)}...` : pub.title
+                        )
+                      }
+                      secondary={`Source: ${pub.journal}`}
+                    />
+                  </Box>
+                  {editing && (
+                    <IconButton edge="end" aria-label="delete" onClick={(e) => { e.stopPropagation(); handleRemoveRelatedItem('related_publications', pub.url); }}>
+                      <DeleteIcon />
+                    </IconButton>
+                  )}
                 </ListItem>
               ) : null
             ))}

@@ -12,13 +12,13 @@ const SearchModal = ({ open, onClose, onAdd, type, currentItems }) => {
   }, [open]);
 
   const handleAdd = (item) => {
-    if (!selectedItems.some(selectedItem => selectedItem.url === item.url)) {
+    if (!selectedItems.some(selectedItem => selectedItem.id === item.id)) {
       setSelectedItems(prevItems => [...prevItems, item]);
     }
   };
 
   const handleRemove = (item) => {
-    setSelectedItems(prevItems => prevItems.filter(i => i.url !== item.url));
+    setSelectedItems(prevItems => prevItems.filter(i => i.id !== item.id));
   };
 
   const handleSave = () => {
@@ -55,7 +55,7 @@ const SearchModal = ({ open, onClose, onAdd, type, currentItems }) => {
         </Button>
         <List>
           {searchResults
-            .filter(result => !currentItems.some(item => item.url === result.url))
+            .filter(result => !currentItems.some(item => item.id === result.id))
             .map((result, index) => (
               <ListItem key={index} button onClick={() => handleAdd(result)}>
                 <ListItemText

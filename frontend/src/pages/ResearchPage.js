@@ -16,6 +16,7 @@ const ResearchPage = () => {
   const { project, loading, relatedProjects, relatedModels, relatedPublications, collaborators, setProject, fetchProject } = useProject(projectId);
   const [editing, setEditing] = useState(false);
   const [tempProject, setTempProject] = useState({});
+  const [originalProject, setOriginalProject] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ const ResearchPage = () => {
   useEffect(() => {
     if (!editing) {
       setTempProject({ ...project });
+      setOriginalProject({ ...project });
     }
   }, [editing, project]);
 
@@ -30,11 +32,12 @@ const ResearchPage = () => {
 
   const handleCancel = () => {
     setEditing(false);
-    setTempProject({});
+    setTempProject({ ...originalProject });
   };
 
   const handleSave = async () => {
     try {
+      console.log("temp at update: ", tempProject);
       await pb.collection('research_projects').update(project.id, tempProject);
       await fetchProject(project.id); // Refresh the project data
       setEditing(false);
@@ -81,16 +84,17 @@ const ResearchPage = () => {
     });
   };
 
-  const handleRemove = (id) => {
+  const handleRemoveRelatedItem = (type, id) => {
     setTempProject(prevState => {
-      const updatedField = prevState[modalType].filter(item => {
-        if (modalType === 'related_publications') {
+      const updatedField = prevState[type].filter(item => {
+        if (type === 'related_publications') {
           return item.url !== id;
         }
         return item !== id;
       });
-      return { ...prevState, [modalType]: updatedField };
+      return { ...prevState, [type]: updatedField };
     });
+    console.log("tempProj: ", tempProject);
   };
 
   const handleRemoveCollaborator = (id) => {
@@ -163,6 +167,7 @@ const ResearchPage = () => {
                 editing={editing}
                 handleNavigation={handleNavigation}
                 openModal={openModal}
+                handleRemoveRelatedItem={handleRemoveRelatedItem}
               />
             </Grid>
           </Grid>
