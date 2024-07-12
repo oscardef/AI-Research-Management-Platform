@@ -77,6 +77,12 @@ const ResearchPage = () => {
             }))
           ])
         ];
+      } else if (modalType === 'collaborators') {
+        updatedField = [...new Set([...(prevState[modalType] || []), ...items.map(item => item.id)])];
+        setProject(prevProject => ({
+          ...prevProject,
+          collaborators: updatedField
+        }));
       } else {
         updatedField = [...new Set([...(prevState[modalType] || []), ...items.map(item => item.id)])];
       }
@@ -101,6 +107,10 @@ const ResearchPage = () => {
     setTempProject(prevState => ({
       ...prevState,
       collaborators: prevState.collaborators.filter(collabId => collabId !== id)
+    }));
+    setProject(prevProject => ({
+      ...prevProject,
+      collaborators: prevProject.collaborators.filter(collabId => collabId !== id)
     }));
   };
 
@@ -128,7 +138,14 @@ const ResearchPage = () => {
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
-      <SearchModal open={modalOpen} onClose={closeModal} onAdd={handleAdd} type={modalType} currentItems={collaborators.filter(c => tempProject.collaborators?.includes(c.id))} />
+      <SearchModal
+        open={modalOpen}
+        onClose={closeModal}
+        onAdd={handleAdd}
+        type={modalType}
+        currentItems={tempProject[modalType] || []}
+        excludeId={projectId}
+      />
       <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
         <CardContent>
           <Typography variant="h4" align="center" gutterBottom>

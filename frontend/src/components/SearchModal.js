@@ -1,88 +1,125 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, List, ListItem, ListItemText, CircularProgress, Typography, IconButton, Divider } from '@mui/material';
-import useSearch from '../hooks/useSearch';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Dialog, DialogTitle, DialogContent, TextField, List, ListItem, ListItemText, Button, CircularProgress, Box, Typography } from '@mui/material';
+import { pb } from '../services/pocketbaseClient';
 
-const SearchModal = ({ open, onClose, onAdd, type, currentItems }) => {
-  const { searchTerm, setSearchTerm, searchResults, loading, handleSearch } = useSearch(type);
-  const [selectedItems, setSelectedItems] = useState([]);
+const SearchModal = ({ open, onClose, onAdd, type, currentItems, excludeId }) => {
+  const [searchResults, setSearchResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    setSelectedItems([]); // Clear selected items when modal opens
-  }, [open]);
+    const fetchData = async () => {
+      if (searchQuery) {
+        setLoading(true);
+        try {
+          let results = [];
+          if (type === 'related_publications') {
+            // Fetch from CrossRef API for publications
+            const response = await fetch(`https://api.crossref.org/works?query=${searchQuery}&rows=20`);
+            if (!response.ok) throw new Error('Error fetching publications');
+            const data = await response.json();
+            if (data.message && Array.isArray(data.message.items)) {
+              results = data.message.items.map(item => ({
+                title: item.title ? item.title[0] : 'No title',
+                url: item.URL,
+                journal: item['container-title'] ? item['container-title'][0] : 'No journal',
+                author: item.author ? item.author.map(a => `${a.given} ${a.family}`).join(', ') : 'Unknown'
+              }));
+            }
+          } else {
+            let collectionName = '';
+            let filterField = '';
+            
+            switch (type) {
+              case 'related_projects':
+                collectionName = 'research_projects';
+                filterField = 'title';
+                break;
+              case 'related_models':
+                collectionName = 'models';
+                filterField = 'name';
+                break;
+              case 'collaborators':
+                collectionName = 'users';
+                filterField = 'name';
+                break;
+              default:
+                collectionName = type;
+            }
+            const filter = `${filterField}~"${searchQuery}"`;
+            const res = await pb.collection(collectionName).getList(1, 20, { filter });
+            results = res.items;
+          }
+
+          const filteredResults = results.filter(item => {
+            if (type === 'related_publications') {
+              return !currentItems.some(existingItem => existingItem.url === item.url);
+            }
+            return item.id !== excludeId && !currentItems.some(existingItem => existingItem === item.id);
+          });
+
+          setSearchResults(filteredResults);
+        } catch (error) {
+          console.error('Error fetching search results:', error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    };
+
+    fetchData();
+  }, [searchQuery, type, currentItems, excludeId]);
+
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
 
   const handleAdd = (item) => {
-    if (!selectedItems.some(selectedItem => selectedItem.id === item.id)) {
-      setSelectedItems(prevItems => [...prevItems, item]);
-    }
-  };
-
-  const handleRemove = (item) => {
-    setSelectedItems(prevItems => prevItems.filter(i => i.id !== item.id));
-  };
-
-  const handleSave = () => {
-    const itemsToAdd = selectedItems.map(item => {
-      if (type === 'related_publications') {
-        return {
-          title: item.title,
-          url: item.url,
-          journal: item.journal,
-          author: item.author,
-        };
-      }
-      return item;
-    });
-    onAdd(itemsToAdd); // Save the selected items
+    onAdd([item]);
     onClose();
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Add {type.replace('_', ' ')}</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth>
+      <DialogTitle>Search {type.replace('_', ' ')}</DialogTitle>
       <DialogContent>
         <TextField
+          autoFocus
+          margin="dense"
           label="Search"
-          variant="outlined"
+          type="text"
           fullWidth
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-          sx={{ mb: 2 }}
+          value={searchQuery}
+          onChange={handleSearchChange}
         />
-        <Button variant="contained" onClick={handleSearch} disabled={loading} fullWidth sx={{ mb: 2 }}>
-          {loading ? <CircularProgress size={24} /> : 'Search'}
-        </Button>
-        <List>
-          {searchResults
-            .filter(result => !currentItems.some(item => item.id === result.id))
-            .map((result, index) => (
-              <ListItem key={index} button onClick={() => handleAdd(result)}>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <List>
+            {searchResults.map((result) => (
+              <ListItem button onClick={() => handleAdd(result)} key={result.id || result.url}>
                 <ListItemText
-                  primary={result.title || result.name}
-                  secondary={result.description || result.journal}
+                  primary={result.title || result.name || result.username || result.url}
+                  secondary={
+                    type === 'related_publications'
+                      ? <>
+                          <Typography variant="body2">Author: {result.author}</Typography>
+                          <Typography variant="body2">Journal: {result.journal}</Typography>
+                        </>
+                      : result.description
+                        ? `${result.description.substring(0, 50)}...`
+                        : null
+                  }
                 />
               </ListItem>
             ))}
-        </List>
-        <Typography variant="h6">Selected Items:</Typography>
-        <List>
-          {selectedItems.map((item, index) => (
-            <ListItem key={index} secondaryAction={
-              <IconButton edge="end" aria-label="delete" onClick={() => handleRemove(item)}>
-                <DeleteIcon />
-              </IconButton>
-            }>
-              <ListItemText primary={item.title || item.name} secondary={item.description} />
-            </ListItem>
-          ))}
-        </List>
+          </List>
+        )}
       </DialogContent>
-      <Divider />
-      <DialogActions>
-        <Button onClick={onClose} color="secondary">Close</Button>
-        <Button onClick={handleSave} color="primary">Save</Button>
-      </DialogActions>
     </Dialog>
   );
 };

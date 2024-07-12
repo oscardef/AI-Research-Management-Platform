@@ -3,13 +3,7 @@ import { Card, CardContent, Typography, List, ListItem, ListItemText, IconButton
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Link } from 'react-router-dom';
 
-const ProjectCard = ({ projects, isOwnPage, handleDelete, setOpenDeleteDialog, setDeletionTarget }) => {
-  const handleDeleteClick = (event, project) => {
-    event.preventDefault();
-    setDeletionTarget({ id: project.id, name: project.title, type: 'project' });
-    setOpenDeleteDialog(true);
-  };
-
+const ProjectCard = ({ projects, isOwnPage, handleDelete }) => {
   return (
     <Card sx={{ boxShadow: 3 }}>
       <CardContent>
@@ -27,7 +21,7 @@ const ProjectCard = ({ projects, isOwnPage, handleDelete, setOpenDeleteDialog, s
                   secondary={project.description}
                 />
                 {isOwnPage && (
-                  <IconButton onClick={(event) => handleDeleteClick(event, project)}>
+                  <IconButton onClick={(event) => { event.preventDefault(); handleDelete(project, 'project'); }}>
                     <DeleteIcon color="error" />
                   </IconButton>
                 )}

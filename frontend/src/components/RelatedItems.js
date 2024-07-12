@@ -9,23 +9,24 @@ const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, pro
   const [modelDetails, setModelDetails] = useState([]);
   const [publicationDetails, setPublicationDetails] = useState([]);
 
-  const fetchDetails = async () => {
-    try {
-      const projects = await Promise.all(
-        project.related_projects.map(id => pb.collection('research_projects').getOne(id))
-      );
-      const models = await Promise.all(
-        project.related_models.map(id => pb.collection('models').getOne(id))
-      );
-      setProjectDetails(projects);
-      setModelDetails(models);
-      setPublicationDetails(project.related_publications);
-    } catch (error) {
-      console.error('Error fetching details:', error);
-    }
-  };
+  
 
   useEffect(() => {
+    const fetchDetails = async () => {
+        try {
+          const projects = await Promise.all(
+            project.related_projects.map(id => pb.collection('research_projects').getOne(id))
+          );
+          const models = await Promise.all(
+            project.related_models.map(id => pb.collection('models').getOne(id))
+          );
+          setProjectDetails(projects);
+          setModelDetails(models);
+          setPublicationDetails(project.related_publications);
+        } catch (error) {
+          console.error('Error fetching details:', error);
+        }
+      };
     if (editing) {
       fetchDetails();
     }
