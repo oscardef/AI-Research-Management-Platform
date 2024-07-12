@@ -6,7 +6,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import useProject from '../hooks/useProject';
-import SearchModal from '../components/SearchModal';
+import SearchModal from '../components/Common/SearchModal';
 import { ProjectDescription, ProjectDetails } from '../components/ProjectDetails';
 import ProjectCollaborators from '../components/ProjectCollaborators';
 import RelatedItems from '../components/RelatedItems';
@@ -53,12 +53,29 @@ const ResearchPage = () => {
       const [field, index, key] = name.split('.');
       setTempProject(prevState => {
         const updatedArray = [...(prevState[field] || [])];
+        if (!updatedArray[index]) {
+          updatedArray[index] = {};
+        }
         updatedArray[parseInt(index)][key] = value;
         return { ...prevState, [field]: updatedArray };
       });
     } else {
       setTempProject({ ...tempProject, [name]: value });
     }
+  };
+
+  const handleAddDetail = () => {
+    setTempProject(prevState => ({
+      ...prevState,
+      details: [...(prevState.details || []), { key: '', value: '' }]
+    }));
+  };
+
+  const handleRemoveDetail = (index) => {
+    setTempProject(prevState => {
+      const updatedDetails = prevState.details.filter((_, i) => i !== index);
+      return { ...prevState, details: updatedDetails };
+    });
   };
 
   const handleAdd = (items) => {
@@ -166,7 +183,7 @@ const ResearchPage = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} md={8}>
               <ProjectDescription project={tempProject} handleChange={handleChange} editing={editing} />
-              <ProjectDetails project={tempProject} handleChange={handleChange} editing={editing} handleAddDetail={() => setTempProject({ ...tempProject, details: [...(tempProject.details || []), { key: '', value: '' }] })} />
+              <ProjectDetails project={tempProject} handleChange={handleChange} editing={editing} handleAddDetail={handleAddDetail} handleRemoveDetail={handleRemoveDetail} />
               <ProjectCollaborators
                 collaborators={collaborators}
                 project={tempProject}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, TextField, List, ListItem, ListItemText, Button, CircularProgress, Box, Typography } from '@mui/material';
-import { pb } from '../services/pocketbaseClient';
+import { pb } from '../../services/pocketbaseClient';
 
 const SearchModal = ({ open, onClose, onAdd, type, currentItems, excludeId }) => {
   const [searchResults, setSearchResults] = useState([]);
@@ -29,7 +29,7 @@ const SearchModal = ({ open, onClose, onAdd, type, currentItems, excludeId }) =>
           } else {
             let collectionName = '';
             let filterField = '';
-            
+
             switch (type) {
               case 'related_projects':
                 collectionName = 'research_projects';
