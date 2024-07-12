@@ -1,30 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, List, ListItem, ListItemText, CircularProgress, Typography, IconButton } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, List, ListItem, ListItemText, CircularProgress, Typography, IconButton, Divider } from '@mui/material';
 import useSearch from '../hooks/useSearch';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const SearchModal = ({ open, onClose, onSave, type, initialItems }) => {
+const SearchModal = ({ open, onClose, onAdd, type, currentItems }) => {
   const { searchTerm, setSearchTerm, searchResults, loading, handleSearch } = useSearch(type);
-  const [selectedItems, setSelectedItems] = useState(initialItems || []);
+  const [selectedItems, setSelectedItems] = useState([]);
 
   useEffect(() => {
-    setSelectedItems(initialItems || []);
-  }, [initialItems]);
+    setSelectedItems([]); // Clear selected items when modal opens
+  }, [open]);
 
   const handleAdd = (item) => {
-    if (!selectedItems.some(selectedItem => selectedItem.id === item.id)) {
+    if (!selectedItems.some(selectedItem => selectedItem.url === item.url)) {
       setSelectedItems(prevItems => [...prevItems, item]);
     }
   };
 
   const handleRemove = (item) => {
-    setSelectedItems(prevItems => prevItems.filter(i => i.id !== item.id));
+    setSelectedItems(prevItems => prevItems.filter(i => i.url !== item.url));
   };
 
   const handleSave = () => {
-    if (onSave) {
-      onSave(selectedItems);
-    }
+    const itemsToAdd = selectedItems.map(item => {
+      if (type === 'related_publications') {
+        return {
+          title: item.title,
+          url: item.url,
+          journal: item.journal,
+          author: item.author,
+        };
+      }
+      return item;
+    });
+    onAdd(itemsToAdd); // Save the selected items
     onClose();
   };
 
@@ -41,18 +50,20 @@ const SearchModal = ({ open, onClose, onSave, type, initialItems }) => {
           onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
           sx={{ mb: 2 }}
         />
-        <Button variant="contained" onClick={handleSearch} disabled={loading} sx={{ mb: 2 }}>
+        <Button variant="contained" onClick={handleSearch} disabled={loading} fullWidth sx={{ mb: 2 }}>
           {loading ? <CircularProgress size={24} /> : 'Search'}
         </Button>
         <List>
-          {searchResults.map((result, index) => (
-            <ListItem key={index} button onClick={() => handleAdd(result)}>
-              <ListItemText
-                primary={result.title || result.name}
-                secondary={result.description || result.journal}
-              />
-            </ListItem>
-          ))}
+          {searchResults
+            .filter(result => !currentItems.some(item => item.url === result.url))
+            .map((result, index) => (
+              <ListItem key={index} button onClick={() => handleAdd(result)}>
+                <ListItemText
+                  primary={result.title || result.name}
+                  secondary={result.description || result.journal}
+                />
+              </ListItem>
+            ))}
         </List>
         <Typography variant="h6">Selected Items:</Typography>
         <List>
@@ -67,8 +78,9 @@ const SearchModal = ({ open, onClose, onSave, type, initialItems }) => {
           ))}
         </List>
       </DialogContent>
+      <Divider />
       <DialogActions>
-        <Button onClick={onClose} color="primary">Close</Button>
+        <Button onClick={onClose} color="secondary">Close</Button>
         <Button onClick={handleSave} color="primary">Save</Button>
       </DialogActions>
     </Dialog>

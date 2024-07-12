@@ -1,4 +1,3 @@
-// hooks/useSearch.js
 import { useState } from 'react';
 import { pb } from '../services/pocketbaseClient';
 
