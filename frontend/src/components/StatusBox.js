@@ -1,6 +1,5 @@
-// StatusBox.js
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, MenuItem, Select } from '@mui/material';
 import { styled } from '@mui/system';
 
 const StyledStatusBox = styled(Box)(({ statusColor }) => ({
@@ -28,9 +27,23 @@ const getStatusColor = (status) => {
   }
 };
 
-const StatusBox = ({ status }) => (
+const StatusBox = ({ status, handleChange, editing }) => (
   <StyledStatusBox statusColor={getStatusColor(status)}>
-    <Typography variant="body2">Status: {status}</Typography>
+    {editing ? (
+      <Select
+        value={status}
+        onChange={handleChange}
+        name="status"
+        sx={{ color: '#fff' }}
+      >
+        <MenuItem value="active">Active</MenuItem>
+        <MenuItem value="inactive">Inactive</MenuItem>
+        <MenuItem value="complete">Complete</MenuItem>
+        <MenuItem value="pending">Pending</MenuItem>
+      </Select>
+    ) : (
+      <Typography variant="body2">Status: {status}</Typography>
+    )}
   </StyledStatusBox>
 );
 

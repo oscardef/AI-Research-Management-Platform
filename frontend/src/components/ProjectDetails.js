@@ -1,5 +1,6 @@
 import React from 'react';
-import { Card, CardContent, Typography, Box, TextField, Button } from '@mui/material';
+import { Card, CardContent, Typography, Box, TextField, Button, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const ProjectDescription = ({ project, handleChange, editing }) => (
   <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
@@ -22,14 +23,14 @@ const ProjectDescription = ({ project, handleChange, editing }) => (
   </Card>
 );
 
-const ProjectDetails = ({ project, handleChange, editing, handleAddDetail }) => (
+const ProjectDetails = ({ project, handleChange, editing, handleAddDetail, handleRemoveDetail }) => (
   <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
     <CardContent>
       <Typography variant="h6" sx={{ mb: 1 }}>Details</Typography>
       {editing ? (
         <>
           {project.details?.map((detail, index) => (
-            <Box key={index} sx={{ display: 'flex', mb: 2 }}>
+            <Box key={index} sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
               <TextField
                 variant="outlined"
                 label="Detail Key"
@@ -45,6 +46,9 @@ const ProjectDetails = ({ project, handleChange, editing, handleAddDetail }) => 
                 value={detail.value}
                 onChange={handleChange}
               />
+              <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveDetail(index)} sx={{ ml: 2 }}>
+                <DeleteIcon />
+              </IconButton>
             </Box>
           ))}
           <Button variant="contained" onClick={handleAddDetail} sx={{ mt: 2 }}>

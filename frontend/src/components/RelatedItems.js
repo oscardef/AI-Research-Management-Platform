@@ -1,32 +1,32 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, Typography, List, ListItem, ListItemText, Button, Chip, Link, IconButton, Box } from '@mui/material';
+import { Card, CardContent, Typography, List, ListItem, ListItemText, Button, Chip, Link, IconButton, Box, TextField } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { pb } from '../services/pocketbaseClient';
+import StatusBox from './StatusBox';
 
-const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, project, editing, handleNavigation, openModal, handleRemoveRelatedItem }) => {
+const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, project, editing, handleNavigation, openModal, handleRemoveRelatedItem, handleChange, handleAddTag, handleRemoveTag }) => {
   const [projectDetails, setProjectDetails] = useState([]);
   const [modelDetails, setModelDetails] = useState([]);
   const [publicationDetails, setPublicationDetails] = useState([]);
-
-  
+  const [newTag, setNewTag] = useState('');
 
   useEffect(() => {
     const fetchDetails = async () => {
-        try {
-          const projects = await Promise.all(
-            project.related_projects.map(id => pb.collection('research_projects').getOne(id))
-          );
-          const models = await Promise.all(
-            project.related_models.map(id => pb.collection('models').getOne(id))
-          );
-          setProjectDetails(projects);
-          setModelDetails(models);
-          setPublicationDetails(project.related_publications);
-        } catch (error) {
-          console.error('Error fetching details:', error);
-        }
-      };
+      try {
+        const projects = await Promise.all(
+          project.related_projects.map(id => pb.collection('research_projects').getOne(id))
+        );
+        const models = await Promise.all(
+          project.related_models.map(id => pb.collection('models').getOne(id))
+        );
+        setProjectDetails(projects);
+        setModelDetails(models);
+        setPublicationDetails(project.related_publications);
+      } catch (error) {
+        console.error('Error fetching details:', error);
+      }
+    };
     if (editing) {
       fetchDetails();
     }
@@ -43,19 +43,23 @@ const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, pro
   const displayModels = editing ? modelDetails : relatedModels;
   const displayPublications = editing ? publicationDetails : relatedPublications;
 
+  const handleTagChange = (event) => {
+    setNewTag(event.target.value);
+  };
+
+  const handleAddNewTag = () => {
+    if (newTag.trim()) {
+      handleAddTag(newTag.trim());
+      setNewTag('');
+    }
+  };
+
   return (
     <>
       <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
         <CardContent>
           <Typography variant="h6" sx={{ mb: 1 }}>Status</Typography>
-          <Chip
-            label={project.status}
-            sx={{
-              bgcolor: statusColors[project.status],
-              color: 'white',
-              mb: 1,
-            }}
-          />
+          <StatusBox status={project.status} handleChange={handleChange} editing={editing} />
         </CardContent>
       </Card>
       <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
@@ -63,8 +67,27 @@ const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, pro
           <Typography variant="h6" sx={{ mb: 1 }}>Tags</Typography>
           <Box>
             {Array.isArray(project.tags) && project.tags.map((tag, index) => (
-              <Chip key={index} label={tag} sx={{ mr: 1, mb: 1, bgcolor: 'primary.main', color: 'white' }} />
+              <Chip
+                key={index}
+                label={tag}
+                sx={{ mr: 1, mb: 1, bgcolor: 'primary.main', color: 'white' }}
+                onDelete={editing ? () => handleRemoveTag(tag) : undefined}
+              />
             ))}
+            {editing && (
+              <Box sx={{ display: 'flex', mt: 2 }}>
+                <TextField
+                  variant="outlined"
+                  label="New Tag"
+                  value={newTag}
+                  onChange={handleTagChange}
+                  sx={{ mr: 2 }}
+                />
+                <Button variant="contained" onClick={handleAddNewTag}>
+                  Add Tag
+                </Button>
+              </Box>
+            )}
           </Box>
         </CardContent>
       </Card>

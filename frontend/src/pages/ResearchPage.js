@@ -37,7 +37,6 @@ const ResearchPage = () => {
 
   const handleSave = async () => {
     try {
-      console.log("temp at update: ", tempProject);
       await pb.collection('research_projects').update(project.id, tempProject);
       await fetchProject(project.id); // Refresh the project data
       setEditing(false);
@@ -77,12 +76,6 @@ const ResearchPage = () => {
             }))
           ])
         ];
-      } else if (modalType === 'collaborators') {
-        updatedField = [...new Set([...(prevState[modalType] || []), ...items.map(item => item.id)])];
-        setProject(prevProject => ({
-          ...prevProject,
-          collaborators: updatedField
-        }));
       } else {
         updatedField = [...new Set([...(prevState[modalType] || []), ...items.map(item => item.id)])];
       }
@@ -100,7 +93,6 @@ const ResearchPage = () => {
       });
       return { ...prevState, [type]: updatedField };
     });
-    console.log("tempProj: ", tempProject);
   };
 
   const handleRemoveCollaborator = (id) => {
@@ -108,9 +100,19 @@ const ResearchPage = () => {
       ...prevState,
       collaborators: prevState.collaborators.filter(collabId => collabId !== id)
     }));
-    setProject(prevProject => ({
-      ...prevProject,
-      collaborators: prevProject.collaborators.filter(collabId => collabId !== id)
+  };
+
+  const handleAddTag = (tag) => {
+    setTempProject(prevState => ({
+      ...prevState,
+      tags: [...(prevState.tags || []), tag]
+    }));
+  };
+
+  const handleRemoveTag = (tag) => {
+    setTempProject(prevState => ({
+      ...prevState,
+      tags: prevState.tags.filter(t => t !== tag)
     }));
   };
 
@@ -185,6 +187,9 @@ const ResearchPage = () => {
                 handleNavigation={handleNavigation}
                 openModal={openModal}
                 handleRemoveRelatedItem={handleRemoveRelatedItem}
+                handleChange={handleChange}
+                handleAddTag={handleAddTag}
+                handleRemoveTag={handleRemoveTag}
               />
             </Grid>
           </Grid>
