@@ -15,14 +15,14 @@ const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, pro
     const fetchDetails = async () => {
       try {
         const projects = await Promise.all(
-          project.related_projects.map(id => pb.collection('research_projects').getOne(id))
+          relatedProjects.map(id => pb.collection('research_projects').getOne(id))
         );
         const models = await Promise.all(
-          project.related_models.map(id => pb.collection('models').getOne(id))
+          relatedModels.map(id => pb.collection('models').getOne(id))
         );
         setProjectDetails(projects);
         setModelDetails(models);
-        setPublicationDetails(project.related_publications);
+        setPublicationDetails(relatedPublications);
       } catch (error) {
         console.error('Error fetching details:', error);
       }
@@ -30,7 +30,7 @@ const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, pro
     if (editing) {
       fetchDetails();
     }
-  }, [editing, project.related_projects, project.related_models, project.related_publications]);
+  }, [editing, relatedProjects, relatedModels, relatedPublications]);
 
   const statusColors = {
     active: 'green',
