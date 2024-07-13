@@ -1,5 +1,6 @@
 [
     {
+        "id": "project1",
         "title": "AI-Driven Climate Models",
         "description": "Developing advanced AI models to predict climate change scenarios. This project aims to leverage AI techniques to analyze and predict future climate patterns based on historical and real-time data. The models developed will help in understanding the impacts of climate change and aid in the creation of mitigation strategies.",
         "tags": ["AI", "Climate Change", "Environment", "Data Analysis"],
@@ -34,9 +35,12 @@
                 "title": "Advanced AI Techniques for Climate Prediction",
                 "url": "http://dx.doi.org/10.2172/1417315"
             }
-        ]
+        ],
+        "related_projects": ["project2", "project3", "project4"],
+        "related_models": ["model1", "model2", "model3"]
     },
     {
+        "id": "project2",
         "title": "AI for Healthcare Diagnostics",
         "description": "Using AI to enhance the accuracy of medical diagnostics. This project focuses on developing AI algorithms to analyze medical images and patient data to identify diseases and conditions at an early stage. The goal is to reduce misdiagnosis rates and improve patient outcomes through more precise and timely diagnostics.",
         "tags": ["AI", "Healthcare", "Diagnostics", "Medical Imaging"],
@@ -70,9 +74,12 @@
                 "title": "AI in Early Disease Detection",
                 "url": "http://dx.doi.org/10.2172/1417317"
             }
-        ]
+        ],
+        "related_projects": ["project1", "project3", "project5"],
+        "related_models": ["model2", "model4", "model5"]
     },
     {
+        "id": "project3",
         "title": "AI for Personalized Treatment Plans",
         "description": "Developing AI models to create personalized treatment plans for patients based on their medical history and genetic information. This project aims to tailor treatments to individual patients, increasing the effectiveness of therapies and reducing adverse effects. AI-driven insights will enable healthcare providers to offer more precise and personalized care.",
         "tags": ["AI", "Healthcare", "Personalized Medicine", "Genetics"],
@@ -114,9 +121,12 @@
                 "title": "Efficacy of AI in Personalized Treatments",
                 "url": "http://dx.doi.org/10.2172/1417320"
             }
-        ]
+        ],
+        "related_projects": ["project1", "project2", "project6"],
+        "related_models": ["model3", "model5", "model6"]
     },
     {
+        "id": "project4",
         "title": "AI in Early Disease Detection",
         "description": "Leveraging AI to detect diseases at an early stage through the analysis of patient data and medical imaging. This project focuses on developing machine learning models that can identify subtle patterns indicative of diseases like cancer, diabetes, and cardiovascular conditions, enabling earlier intervention and better patient outcomes.",
         "tags": ["AI", "Healthcare", "Disease Detection", "Cancer"],
@@ -151,9 +161,12 @@
                 "title": "AI Techniques in Cancer Detection",
                 "url": "http://dx.doi.org/10.2172/1417322"
             }
-        ]
+        ],
+        "related_projects": ["project1", "project5", "project7"],
+        "related_models": ["model1", "model3", "model5"]
     },
     {
+        "id": "project5",
         "title": "AI for Predictive Healthcare Analytics",
         "description": "Using AI to analyze healthcare data and predict patient outcomes. This project involves the development of predictive models that can forecast disease progression, patient readmission, and treatment responses. The insights generated will help healthcare providers in making informed decisions, ultimately improving patient care and resource management.",
         "tags": ["AI", "Healthcare", "Predictive Analytics", "Data Science"],
@@ -195,9 +208,12 @@
                 "title": "Predictive Analytics using AI",
                 "url": "http://dx.doi.org/10.2172/1417326"
             }
-        ]
+        ],
+        "related_projects": ["project2", "project4", "project6"],
+        "related_models": ["model1", "model6", "model7"]
     },
     {
+        "id": "project6",
         "title": "AI for Genomic Data Analysis",
         "description": "Applying AI techniques to analyze genomic data for insights into genetic disorders and personalized medicine. This project focuses on developing algorithms that can process large-scale genomic data to identify genetic variations associated with diseases. The findings will contribute to the development of personalized treatment plans and targeted therapies.",
         "tags": ["AI", "Genomics", "Personalized Medicine", "Bioinformatics"],
@@ -246,9 +262,12 @@
                 "title": "AI-Driven Genomic Research",
                 "url": "http://dx.doi.org/10.2172/1417331"
             }
-        ]
+        ],
+        "related_projects": ["project3", "project5", "project7"],
+        "related_models": ["model2", "model4", "model8"]
     },
     {
+        "id": "project7",
         "title": "AI in Mental Health Monitoring",
         "description": "Developing AI models to monitor and assess mental health conditions. This project aims to use natural language processing and machine learning to analyze speech, text, and behavioral data to detect signs of mental health issues such as depression, anxiety, and PTSD. Early detection and intervention can significantly improve patient outcomes.",
         "tags": ["AI", "Mental Health", "Monitoring", "NLP"],
@@ -283,9 +302,12 @@
                 "title": "AI and Early Detection of Mental Health Issues",
                 "url": "http://dx.doi.org/10.2172/1417334"
             }
-        ]
+        ],
+        "related_projects": ["project1", "project4", "project6"],
+        "related_models": ["model3", "model5", "model9"]
     },
     {
+        "id": "project8",
         "title": "AI for Drug Discovery",
         "description": "Utilizing AI to accelerate the drug discovery process. This project involves the development of machine learning models to predict the efficacy and safety of new drug compounds. By analyzing chemical structures and biological data, AI can help identify promising drug candidates, reducing the time and cost associated with traditional drug discovery methods.",
         "tags": ["AI", "Drug Discovery", "Healthcare", "Pharmacology"],
@@ -321,9 +343,12 @@
                 "title": "AI Techniques in Drug Development",
                 "url": "http://dx.doi.org/10.2172/1417337"
             }
-        ]
+        ],
+        "related_projects": ["project3", "project5", "project6"],
+        "related_models": ["model4", "model7", "model10"]
     },
     {
+        "id": "project9",
         "title": "AI for Remote Patient Monitoring",
         "description": "Developing AI systems to monitor patients remotely using wearable devices and mobile health apps. This project aims to enhance patient care by continuously tracking vital signs and health metrics, providing real-time insights to healthcare providers. Remote monitoring can improve chronic disease management and reduce hospital readmissions.",
         "tags": ["AI", "Remote Monitoring", "Healthcare", "Wearables"],
@@ -364,9 +389,12 @@
                 "title": "AI-Driven Remote Monitoring",
                 "url": "http://dx.doi.org/10.2172/1417341"
             }
-        ]
+        ],
+        "related_projects": ["project7", "project8", "project10"],
+        "related_models": ["model5", "model6", "model10"]
     },
     {
+        "id": "project10",
         "title": "AI in Surgical Robotics",
         "description": "Exploring the use of AI in enhancing surgical robotics. This project involves developing AI algorithms to assist in surgical procedures, improving precision and outcomes. AI can help in preoperative planning, real-time decision-making during surgery, and postoperative care, ultimately enhancing patient safety and recovery.",
         "tags": ["AI", "Surgical Robotics", "Healthcare", "Precision Medicine"],
@@ -421,56 +449,8 @@
                 "title": "AI and Robotics in Modern Surgery",
                 "url": "http://dx.doi.org/10.2172/1417347"
             }
-        ]
-    },
-    {
-        "title": "AI for Predictive Disease Management",
-        "description": "Using AI to predict disease outbreaks and manage healthcare resources effectively. This project focuses on developing models that can analyze various data sources, such as patient records, environmental data, and social media, to predict disease outbreaks. The insights will help healthcare providers allocate resources efficiently and implement preventive measures.",
-        "tags": ["AI", "Disease Management", "Predictive Analytics", "Healthcare"],
-        "data_sources": [
-            {"key": "dataset1", "value": "https://example.com/dataset1"},
-            {"key": "dataset2", "value": "https://example.com/dataset2"},
-            {"key": "dataset3", "value": "https://example.com/dataset3"},
-            {"key": "dataset4", "value": "https://example.com/dataset4"}
         ],
-        "details": [
-            {"key": "goal", "value": "Enhance disease management and resource allocation."},
-            {"key": "duration", "value": "3 years"},
-            {"key": "collaborators", "value": "Health Analytics Co."}
-        ],
-        "public": true,
-        "status": "pending",
-        "related_publications": [
-            {
-                "author": "Lily Wilson",
-                "journal": "Journal of Disease Management",
-                "title": "AI in Predictive Disease Management",
-                "url": "http://dx.doi.org/10.2172/1417348"
-            },
-            {
-                "author": "James Brown",
-                "journal": "Journal of Medical Predictive Analytics",
-                "title": "Predicting Disease Outbreaks with AI",
-                "url": "http://dx.doi.org/10.2172/1417349"
-            },
-            {
-                "author": "Ella Clark",
-                "journal": "Healthcare Resource Management",
-                "title": "AI for Efficient Healthcare Resource Allocation",
-                "url": "http://dx.doi.org/10.2172/1417350"
-            },
-            {
-                "author": "Noah Lewis",
-                "journal": "Journal of Public Health",
-                "title": "AI in Public Health and Disease Prediction",
-                "url": "http://dx.doi.org/10.2172/1417351"
-            },
-            {
-                "author": "Lucas Walker",
-                "journal": "Medical Analytics",
-                "title": "AI Models for Disease Management",
-                "url": "http://dx.doi.org/10.2172/1417352"
-            }
-        ]
+        "related_projects": ["project7", "project8", "project9"],
+        "related_models": ["model7", "model8", "model9"]
     }
 ]

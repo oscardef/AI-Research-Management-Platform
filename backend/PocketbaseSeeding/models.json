@@ -1,5 +1,6 @@
 [
     {
+        "id": "model1",
         "name": "AI-Enhanced Cancer Detection Model",
         "description": "A sophisticated AI model designed to improve early detection of cancer by analyzing medical imaging data such as MRIs and CT scans. By leveraging deep learning algorithms, this model aims to identify cancerous patterns with high accuracy, thus enabling timely intervention and treatment.",
         "version": "v1.0",
@@ -20,9 +21,12 @@
         ],
         "tags": ["AI", "Cancer", "Detection", "Medical Imaging"],
         "public": true,
-        "status": "active"
+        "status": "active",
+        "related_projects": ["project1", "project4", "project5"],
+        "related_models": ["model2", "model3", "model4"]
     },
     {
+        "id": "model2",
         "name": "AI-Powered Cardiac Risk Assessment Model",
         "description": "This AI model is focused on assessing the risk of cardiac events by analyzing patient data including medical history, lifestyle factors, and biometric information. It uses machine learning techniques to predict the likelihood of heart attacks or other cardiac events, thereby supporting preventative healthcare measures.",
         "version": "v1.1",
@@ -44,9 +48,12 @@
         ],
         "tags": ["AI", "Cardiac Risk", "Healthcare", "Prediction"],
         "public": true,
-        "status": "active"
+        "status": "active",
+        "related_projects": ["project1", "project2", "project6"],
+        "related_models": ["model1", "model3", "model5"]
     },
     {
+        "id": "model3",
         "name": "AI-Driven Diabetes Management Model",
         "description": "Designed to assist in managing diabetes, this AI model analyzes continuous glucose monitoring data and other health metrics to provide personalized recommendations. It helps patients and healthcare providers make informed decisions regarding insulin dosage, diet, and lifestyle changes.",
         "version": "v1.2",
@@ -67,9 +74,12 @@
         ],
         "tags": ["AI", "Diabetes", "Management", "Healthcare"],
         "public": true,
-        "status": "active"
+        "status": "active",
+        "related_projects": ["project3", "project4", "project7"],
+        "related_models": ["model1", "model4", "model5"]
     },
     {
+        "id": "model4",
         "name": "AI-Based Sepsis Prediction Model",
         "description": "This AI model is aimed at predicting sepsis in hospitalized patients by analyzing electronic health records (EHRs) and vital signs data. Early prediction of sepsis can lead to prompt treatment, significantly reducing mortality rates and improving patient outcomes.",
         "version": "v2.0",
@@ -91,9 +101,12 @@
         ],
         "tags": ["AI", "Sepsis", "Prediction", "Healthcare"],
         "public": false,
-        "status": "pending"
+        "status": "pending",
+        "related_projects": ["project2", "project5", "project8"],
+        "related_models": ["model1", "model3", "model6"]
     },
     {
+        "id": "model5",
         "name": "AI-Assisted Radiology Interpretation Model",
         "description": "Developed to support radiologists, this AI model interprets medical imaging data, including X-rays, CT scans, and MRIs. It provides preliminary analysis and highlights areas of concern, thereby speeding up the diagnostic process and reducing the workload on radiologists.",
         "version": "v1.0",
@@ -115,9 +128,12 @@
         ],
         "tags": ["AI", "Radiology", "Diagnostics", "Healthcare"],
         "public": true,
-        "status": "active"
+        "status": "active",
+        "related_projects": ["project3", "project4", "project9"],
+        "related_models": ["model1", "model6", "model7"]
     },
     {
+        "id": "model6",
         "name": "AI-Enhanced Drug Interaction Model",
         "description": "This model uses AI to predict potential drug interactions by analyzing patient medication data and chemical properties of drugs. It aims to prevent adverse drug reactions, ensuring patient safety and optimizing therapeutic outcomes.",
         "version": "v1.3",
@@ -138,9 +154,12 @@
         ],
         "tags": ["AI", "Drug Interaction", "Safety", "Healthcare"],
         "public": true,
-        "status": "active"
+        "status": "active",
+        "related_projects": ["project5", "project6", "project9"],
+        "related_models": ["model2", "model4", "model5"]
     },
     {
+        "id": "model7",
         "name": "AI-Powered Chronic Disease Management Model",
         "description": "Focused on managing chronic diseases such as hypertension and asthma, this AI model provides personalized recommendations by analyzing patient data from wearable devices and health records. The model aims to improve patient compliance and health outcomes through continuous monitoring and adaptive feedback.",
         "version": "v2.1",
@@ -162,9 +181,12 @@
         ],
         "tags": ["AI", "Chronic Disease", "Management", "Healthcare"],
         "public": false,
-        "status": "active"
+        "status": "active",
+        "related_projects": ["project4", "project8", "project10"],
+        "related_models": ["model1", "model6", "model8"]
     },
     {
+        "id": "model8",
         "name": "AI-Driven Mental Health Assessment Model",
         "description": "This AI model assesses mental health conditions by analyzing behavioral data and self-reported symptoms. It aims to support mental health professionals by providing insights into the severity of conditions such as depression and anxiety, and recommending personalized treatment plans.",
         "version": "v1.4",
@@ -186,9 +208,12 @@
         ],
         "tags": ["AI", "Mental Health", "Assessment", "Healthcare"],
         "public": true,
-        "status": "pending"
+        "status": "pending",
+        "related_projects": ["project5", "project6", "project10"],
+        "related_models": ["model3", "model5", "model7"]
     },
     {
+        "id": "model9",
         "name": "AI-Assisted Telemedicine Model",
         "description": "Designed to enhance telemedicine services, this AI model analyzes patient symptoms and medical history to provide preliminary diagnoses and treatment recommendations. It supports healthcare providers in delivering efficient and accurate care remotely, improving patient access to medical services.",
         "version": "v1.0",
@@ -209,9 +234,12 @@
         ],
         "tags": ["AI", "Telemedicine", "Diagnostics", "Healthcare"],
         "public": false,
-        "status": "active"
+        "status": "active",
+        "related_projects": ["project3", "project7", "project10"],
+        "related_models": ["model1", "model6", "model8"]
     },
     {
+        "id": "model10",
         "name": "AI-Powered Health Monitoring Wearable Model",
         "description": "This AI model integrates with wearable health devices to continuously monitor vital signs such as heart rate, blood pressure, and oxygen levels. It provides real-time analysis and alerts for any anomalies, supporting proactive healthcare and early intervention.",
         "version": "v2.2",
@@ -233,6 +261,8 @@
         ],
         "tags": ["AI", "Wearables", "Health Monitoring", "Healthcare"],
         "public": true,
-        "status": "active"
+        "status": "active",
+        "related_projects": ["project2", "project8", "project9"],
+        "related_models": ["model3", "model6", "model7"]
     }
 ]

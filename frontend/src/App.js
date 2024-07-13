@@ -6,10 +6,12 @@ import ResearchPage from './pages/ResearchPage';
 import ModelPage from './pages/ModelPage';
 import LoginPage from './pages/LoginPage';
 import MyAccountPage from './pages/MyAccountPage';
-import MySettingsPage from './pages/MySettingsPage';
 import { pb } from './services/pocketbaseClient';
 import { AuthProvider } from './context/AuthContext';
 import DashboardPage from './pages/DashboardPage';
+import ProfilesPage from './pages/ProfilesPage';
+import ModelsPage from './pages/ModelsPage';
+import ResearchProjectsPage from './pages/ResearchProjectsPage';
 
 const App = () => {
   const [authenticated, setAuthenticated] = useState(false);
@@ -50,7 +52,9 @@ const App = () => {
             <Route path="/research/:projectId" element={authenticated ? <ResearchPage /> : <Navigate to="/login" />} />
             <Route path="/model/:modelId" element={authenticated ? <ModelPage /> : <Navigate to="/login" />} />
             <Route path="/account" element={authenticated ? <MyAccountPage /> : <Navigate to="/login" />} />
-            <Route path="/settings" element={authenticated ? <MySettingsPage /> : <Navigate to="/login" />} />
+            <Route path="/profiles" element={authenticated ? <ProfilesPage /> : <Navigate to="/login" />} />
+            <Route path="/research-projects" element={authenticated ? <ResearchProjectsPage /> : <Navigate to="/login" />} />
+            <Route path="/models" element={authenticated ? <ModelsPage /> : <Navigate to="/login" />} />
             <Route path="*" element={<Navigate to={authenticated ? "/search" : "/login"} />} />
           </Routes>
       </AuthProvider>
