@@ -44,7 +44,7 @@ const SearchPage = () => {
       if (filters.profiles) {
         promises.push(
           pb.collection('profiles').getList(profilePage, RESULTS_PER_PAGE, {
-            filter: `user.name ~ "${searchTerm}" || department ~ "${searchTerm}" || research_interests ~ "${searchTerm}"`,
+            filter: `user.name ~ "${searchTerm}" || department ~ "${searchTerm}" || research_interests ~ "${searchTerm}" || institution ~ "${searchTerm}"`,
             expand: 'user'
           }).then(response => {
             return {
@@ -67,7 +67,7 @@ const SearchPage = () => {
       if (filters.models) {
         promises.push(
           pb.collection('models').getList(modelPage, RESULTS_PER_PAGE, {
-            filter: `name ~ "${searchTerm}" || tags ~ "${searchTerm}"`,
+            filter: `name ~ "${searchTerm}" || tags ~ "${searchTerm}" || collaborators.name ~ "${searchTerm}"`,
             expand: 'collaborators'
           }).then(response => ({
             items: response.items.map(model => ({
@@ -81,7 +81,7 @@ const SearchPage = () => {
       if (filters.researchProjects) {
         promises.push(
           pb.collection('research_projects').getList(researchProjectPage, RESULTS_PER_PAGE, {
-            filter: `title ~ "${searchTerm}" || tags ~ "${searchTerm}"`,
+            filter: `title ~ "${searchTerm}" || tags ~ "${searchTerm}" || collaborators.name ~ "${searchTerm}"`,
             expand: 'collaborators'
           }).then(response => ({
             items: response.items.map(project => ({

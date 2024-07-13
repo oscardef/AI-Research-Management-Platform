@@ -1,0 +1,82 @@
+[
+    {
+        "id": "user1",
+        "name": "John Doe",
+        "email": "johndoe@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": "https://example.com/avatar1.jpg"
+    },
+    {
+        "id": "user2",
+        "name": "Jane Smith",
+        "email": "janesmith@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": "https://example.com/avatar2.jpg"
+    },
+    {
+        "id": "user3",
+        "name": "Alice Johnson",
+        "email": "alicejohnson@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": "https://example.com/avatar3.jpg"
+    },
+    {
+        "id": "user4",
+        "name": "Bob Brown",
+        "email": "bobbrown@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": "https://example.com/avatar4.jpg"
+    },
+    {
+        "id": "user5",
+        "name": "Charlie Green",
+        "email": "charliegreen@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": "https://example.com/avatar5.jpg"
+    },
+    {
+        "id": "user6",
+        "name": "Diana White",
+        "email": "dianawhite@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": "https://example.com/avatar6.jpg"
+    },
+    {
+        "id": "user7",
+        "name": "Ethan Harris",
+        "email": "ethanharris@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": "https://example.com/avatar7.jpg"
+    },
+    {
+        "id": "user8",
+        "name": "Fiona Clark",
+        "email": "fionaclark@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": "https://example.com/avatar8.jpg"
+    },
+    {
+        "id": "user9",
+        "name": "George Lewis",
+        "email": "georgelewis@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": "https://example.com/avatar9.jpg"
+    },
+    {
+        "id": "user10",
+        "name": "Hannah Walker",
+        "email": "hannahwalker@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": "https://example.com/avatar10.jpg"
+    }
+]

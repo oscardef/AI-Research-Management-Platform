@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Avatar, Typography, Link } from '@mui/material';
+import { Box, Avatar, Typography, Link, Chip } from '@mui/material';
 import { NavLink } from 'react-router-dom';
 
 const ProfileResult = ({ profile }) => {
@@ -13,8 +13,6 @@ const ProfileResult = ({ profile }) => {
     return `${baseUrl}/${userId}/${filename}`;
   };
 
-  console.log('Profile:', profile); // Debug information to check profile fields
-
   return (
     <Box sx={{ mb: 2, p: 2, border: '1px solid #ccc', borderRadius: 2, display: 'flex', alignItems: 'center' }}>
       <Avatar
@@ -22,7 +20,7 @@ const ProfileResult = ({ profile }) => {
         alt={profile.name}
         sx={{ width: 56, height: 56, mr: 2 }}
       />
-      <Box>
+      <Box sx={{ flex: 1 }}>
         <Typography variant="h6">
           <Link component={NavLink} to={`/dashboard/${profile.user}`} underline="hover">
             {truncateTitle(profile.name, 50)}
@@ -30,6 +28,11 @@ const ProfileResult = ({ profile }) => {
         </Typography>
         <Typography variant="body1">{profile.institution || 'No institution available'}</Typography>
         <Typography variant="body2" color="textSecondary">{profile.department || 'No department available'}</Typography>
+        <Box sx={{ mt: 1, mb: 1 }}>
+          {Array.isArray(profile.research_interests) && profile.research_interests.map((interest, index) => (
+            <Chip key={index} label={interest} sx={{ mr: 1, mb: 1, backgroundColor: 'primary.main', color: '#fff' }} />
+          ))}
+        </Box>
       </Box>
     </Box>
   );

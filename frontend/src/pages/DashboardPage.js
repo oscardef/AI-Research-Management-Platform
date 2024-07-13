@@ -69,12 +69,15 @@ const DashboardPage = () => {
     const fetchProjects = async () => {
       if (userId) {
         try {
-          const projectsData = await pb.collection('research_projects').getFullList(200, {
-            filter: `(public=true || collaborators~'${userId}')`
-          });
-          setProjects(projectsData);
-          const myProjects = projectsData.filter(project => project.collaborators.includes(userId));
-          setMyProjects(myProjects);
+          const projectsData = await pb.collection('research_projects').getFullList(200);
+          let filteredProjects;
+          if (isOwnPage) {
+            filteredProjects = projectsData.filter(project => project.collaborators.includes(userId));
+          } else {
+            filteredProjects = projectsData.filter(project => project.public && project.collaborators.includes(userId));
+          }
+          setProjects(filteredProjects);
+          setMyProjects(filteredProjects.filter(project => project.collaborators.includes(session?.id)));
         } catch (error) {
           console.error('Error fetching projects:', error);
         }
@@ -84,10 +87,14 @@ const DashboardPage = () => {
     const fetchModels = async () => {
       if (userId) {
         try {
-          const records = await pb.collection('models').getFullList(200, {
-            filter: `(public=true || collaborators~'${userId}')`
-          });
-          setModels(records || []);
+          const modelsData = await pb.collection('models').getFullList(200);
+          let filteredModels;
+          if (isOwnPage) {
+            filteredModels = modelsData.filter(model => model.collaborators.includes(userId));
+          } else {
+            filteredModels = modelsData.filter(model => model.public && model.collaborators.includes(userId));
+          }
+          setModels(filteredModels);
         } catch (error) {
           console.error('Error fetching models:', error);
         }
@@ -110,7 +117,7 @@ const DashboardPage = () => {
     fetchModels();
     fetchUsers();
     setLoading(false);
-  }, [userId, session?.id]);
+  }, [userId, session?.id, isOwnPage]);
 
   const handleOpenProjectDialog = () => {
     setOpenProjectDialog(true);
@@ -159,6 +166,7 @@ const DashboardPage = () => {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
+    console.log("file: ", file);
     setSelectedFile(file);
     setSelectedFileName(file ? file.name : '');
   };
@@ -311,7 +319,7 @@ const DashboardPage = () => {
       <Grid container spacing={4}>
         <Grid item xs={12} md={6}>
           <ProjectCard
-            projects={myProjects}
+            projects={projects}
             isOwnPage={isOwnPage}
             handleDelete={handleDelete}
           />

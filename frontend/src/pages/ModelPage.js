@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Typography, Button, TextField, Card, CardContent, CardActions, Grid, Divider, CircularProgress, IconButton, Chip, Dialog, DialogContent, DialogTitle, DialogActions, Radio, RadioGroup, FormControlLabel
+  Box, Typography, Button, TextField, Card, CardContent, CardActions, Grid, Divider, CircularProgress, IconButton, Chip, Dialog, DialogContent, DialogTitle, DialogActions, Radio, RadioGroup, FormControlLabel, Switch, ListItem, List, ListItemText
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -37,7 +37,10 @@ const ModelPage = () => {
     status: 'active',
     tags: [],
     related_projects: [],
-    related_models: []
+    related_models: [],
+    data_sources: [],
+    hyperparameters: [],
+    files: []
   });
   const [newTag, setNewTag] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -56,12 +59,15 @@ const ModelPage = () => {
   }, [editMode, model]);
 
   const handleChange = (e) => {
-    setTempModel({ ...tempModel, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+    setTempModel({ ...tempModel, [name]: newValue });
   };
 
   const handleSaveChanges = async () => {
     try {
       setUploading(true);
+      console.log("tempMod: ", tempModel)
       const updatedRecord = await pb.collection('models').update(modelId, {
         ...tempModel,
         tags: tempModel.tags.map(tag => tag.trim())
@@ -74,16 +80,6 @@ const ModelPage = () => {
       console.error('Error updating model:', error);
       alert(`Error updating model: ${error.message}`);
       setUploading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      await pb.collection('models').delete(modelId);
-      navigate('/models');
-    } catch (error) {
-      console.error('Error deleting model:', error);
-      alert(`Error deleting model: ${error.message}`);
     }
   };
 
@@ -177,6 +173,86 @@ const ModelPage = () => {
       updatedMetrics[index][name] = value;
       return { ...prevState, performance_metrics: updatedMetrics };
     });
+  };
+
+  const handleAddDataSource = () => {
+    setTempModel(prevState => ({
+      ...prevState,
+      data_sources: [...prevState.data_sources, { key: '', value: '' }]
+    }));
+  };
+
+  const handleRemoveDataSource = (index) => {
+    setTempModel(prevState => ({
+      ...prevState,
+      data_sources: prevState.data_sources.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleDataSourceChange = (e, index) => {
+    const { name, value } = e.target;
+    setTempModel(prevState => {
+      const updatedSources = [...prevState.data_sources];
+      updatedSources[index][name] = value;
+      return { ...prevState, data_sources: updatedSources };
+    });
+  };
+
+  const handleAddHyperparameter = () => {
+    setTempModel(prevState => ({
+      ...prevState,
+      hyperparameters: [...prevState.hyperparameters, { key: '', value: '' }]
+    }));
+  };
+
+  const handleRemoveHyperparameter = (index) => {
+    setTempModel(prevState => ({
+      ...prevState,
+      hyperparameters: prevState.hyperparameters.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleHyperparameterChange = (e, index) => {
+    const { name, value } = e.target;
+    setTempModel(prevState => {
+      const updatedParams = [...prevState.hyperparameters];
+      updatedParams[index][name] = value;
+      return { ...prevState, hyperparameters: updatedParams };
+    });
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    const fileName = file.name;
+
+    if (!tempModel.files.includes(fileName)) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await pb.collection('models').update(modelId, formData);
+
+        setTempModel(prevState => ({
+          ...prevState,
+          files: [...prevState.files, fileName]
+        }));
+      } catch (error) {
+        console.error('Error uploading file:', error);
+      }
+    } else {
+      console.log('File already exists in the database.');
+    }
+  };
+
+  const handleFileRemove = (fileName) => {
+    try {
+      setTempModel(prevState => ({
+        ...prevState,
+        files: prevState.files.filter(file => file !== fileName)
+      }));
+    } catch (error) {
+      console.error('Error removing file:', error);
+    }
   };
 
   const handleAddCollaborator = (collaborator) => {
@@ -333,6 +409,125 @@ const ModelPage = () => {
                   )}
                 </CardContent>
               </Card>
+              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Data Sources</Typography>
+                  {editMode ? (
+                    <>
+                      {tempModel.data_sources.map((source, index) => (
+                        <Box key={index} sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
+                          <TextField
+                            variant="outlined"
+                            label="Source Key"
+                            name="key"
+                            value={source.key}
+                            onChange={(e) => handleDataSourceChange(e, index)}
+                            sx={{ mr: 2 }}
+                          />
+                          <TextField
+                            variant="outlined"
+                            label="Source Value"
+                            name="value"
+                            value={source.value}
+                            onChange={(e) => handleDataSourceChange(e, index)}
+                          />
+                          <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveDataSource(index)} sx={{ ml: 2 }}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+                      ))}
+                      <Button variant="contained" onClick={handleAddDataSource} sx={{ mt: 2 }}>
+                        Add Source
+                      </Button>
+                    </>
+                  ) : (
+                    <Box>
+                      {model.data_sources.map((source, index) => (
+                        <Box key={index} sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
+                          <Typography variant="body1" sx={{ mr: 2 }}>
+                            <strong>{source.key}:</strong> {source.value}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Hyperparameters</Typography>
+                  {editMode ? (
+                    <>
+                      {tempModel.hyperparameters.map((param, index) => (
+                        <Box key={index} sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
+                          <TextField
+                            variant="outlined"
+                            label="Parameter Key"
+                            name="key"
+                            value={param.key}
+                            onChange={(e) => handleHyperparameterChange(e, index)}
+                            sx={{ mr: 2 }}
+                          />
+                          <TextField
+                            variant="outlined"
+                            label="Parameter Value"
+                            name="value"
+                            value={param.value}
+                            onChange={(e) => handleHyperparameterChange(e, index)}
+                          />
+                          <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveHyperparameter(index)} sx={{ ml: 2 }}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+                      ))}
+                      <Button variant="contained" onClick={handleAddHyperparameter} sx={{ mt: 2 }}>
+                        Add Parameter
+                      </Button>
+                    </>
+                  ) : (
+                    <Box>
+                      {model.hyperparameters.map((param, index) => (
+                        <Box key={index} sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
+                          <Typography variant="body1" sx={{ mr: 2 }}>
+                            <strong>{param.key}:</strong> {param.value}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Files</Typography>
+                  {editMode ? (
+                    <>
+                      <input
+                        type="file"
+                        onChange={handleFileUpload}
+                      />
+                      <List>
+                        {tempModel.files.map((file, index) => (
+                          <ListItem key={index}>
+                            <ListItemText primary={file} />
+                            <IconButton edge="end" aria-label="delete" onClick={() => handleFileRemove(file)}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </ListItem>
+                        ))}
+                      </List>
+                    </>
+                  ) : (
+                    <List>
+                      {model.files.map((file, index) => (
+                        <ListItem key={index}>
+                          <ListItemText primary={file} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  )}
+                </CardContent>
+              </Card>
             </Grid>
             <Grid item xs={12} md={4}>
               <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
@@ -388,6 +583,22 @@ const ModelPage = () => {
                 handleRemoveRelatedItem={handleRemoveRelatedItem}
                 tempModel={tempModel}
               />
+              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Visibility</Typography>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={tempModel.public}
+                        onChange={(e) => handleChange({ target: { name: 'public', value: e.target.checked, type: 'checkbox' } })}
+                        name="public"
+                        color="primary"
+                      />
+                    }
+                    label={tempModel.public ? 'Public' : 'Private'}
+                  />
+                </CardContent>
+              </Card>
             </Grid>
           </Grid>
         </CardContent>
@@ -398,7 +609,7 @@ const ModelPage = () => {
               <Button variant="contained" color="primary" onClick={handleSaveChanges} disabled={uploading}>
                 {uploading ? <CircularProgress size={24} /> : 'Save Changes'}
               </Button>
-              <Button variant="contained" color="secondary" onClick={() => setEditMode(false)} disabled={uploading}>
+              <Button variant="contained" color='primary' onClick={() => setEditMode(false)} disabled={uploading}>
                 Cancel
               </Button>
             </>
@@ -406,9 +617,6 @@ const ModelPage = () => {
             <>
               <Button variant="contained" color="primary" onClick={() => setEditMode(true)}>
                 Edit Page
-              </Button>
-              <Button variant="contained" color="error" onClick={handleDelete}>
-                Delete
               </Button>
               <Button variant="contained" color="secondary" onClick={handleDeployOpen}>
                 Deploy to UbiOps
