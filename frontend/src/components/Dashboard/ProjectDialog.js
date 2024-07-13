@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, MenuItem, Box, Autocomplete, CircularProgress, Typography, Card, CardContent } from '@mui/material';
 import axios from 'axios';
-
+import { pb } from '../../services/pocketbaseClient';
 const ProjectDialog = ({
   open,
   handleClose,
@@ -13,20 +13,37 @@ const ProjectDialog = ({
   handleAddDataSource,
   handleDataSourceChange,
   filteredUsers = [],
-  projects = [],
-  models = [],
   session
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [models, setModels] = useState([]);
 
   useEffect(() => {
-    // Reset search results whenever the dialog opens or newProject changes
+    const fetchProjectsAndModels = async () => {
+      try {
+        const projectsData = await pb.collection('research_projects').getFullList(200, {
+          filter: `public=true || collaborators~'${session.id}'`
+        });
+
+        const modelsData = await pb.collection('models').getFullList(200, {
+          filter: `public=true || collaborators~'${session.id}'`
+        });
+
+        setProjects(projectsData);
+        setModels(modelsData);
+      } catch (error) {
+        console.error('Error fetching projects and models:', error);
+      }
+    };
+
     if (open) {
+      fetchProjectsAndModels();
       setSearchResults([]);
     }
-  }, [open, newProject]);
+  }, [open, session.id]);
 
   const handleSearch = async () => {
     setLoading(true);
@@ -39,18 +56,8 @@ const ProjectDialog = ({
         url: item.URL
       }));
 
-      // Filter out already added publications from search results
-      const filteredResults = results.filter(result => {
-        return !newProject.related_publications.some(pub => pub.url === result.url);
-      });
-
-      // Update searchResults to merge with existing results but exclude duplicates
-      setSearchResults(prevSearchResults => {
-        const newResults = filteredResults.filter(result => {
-          return !prevSearchResults.some(prevResult => prevResult.url === result.url);
-        });
-        return [...prevSearchResults, ...newResults];
-      });
+      const filteredResults = results.filter(result => !newProject.related_publications.some(pub => pub.url === result.url));
+      setSearchResults(filteredResults);
     } catch (error) {
       console.error('Error searching for publications:', error);
     }
@@ -64,7 +71,6 @@ const ProjectDialog = ({
         related_publications: [...prevState.related_publications, publication]
       }));
 
-      // Remove added publication from search results
       setSearchResults(searchResults.filter(pub => pub.url !== publication.url));
     }
   };

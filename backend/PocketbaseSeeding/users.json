@@ -1,82 +1,82 @@
 [
     {
-        "id": "user1",
+        "id": "e1977d8cddbf44f",
         "name": "John Doe",
-        "email": "johndoe@example.com",
+        "email": "john.doe@example.com",
         "password": "password123",
         "passwordConfirm": "password123",
-        "profile_picture": "https://example.com/avatar1.jpg"
+        "profile_picture": ""
     },
     {
-        "id": "user2",
+        "id": "6b2c77f27a324c1",
         "name": "Jane Smith",
-        "email": "janesmith@example.com",
+        "email": "jane.smith@example.com",
         "password": "password123",
         "passwordConfirm": "password123",
-        "profile_picture": "https://example.com/avatar2.jpg"
+        "profile_picture": ""
     },
     {
-        "id": "user3",
+        "id": "3675911d75154f6",
         "name": "Alice Johnson",
-        "email": "alicejohnson@example.com",
+        "email": "alice.johnson@example.com",
         "password": "password123",
         "passwordConfirm": "password123",
-        "profile_picture": "https://example.com/avatar3.jpg"
+        "profile_picture": ""
     },
     {
-        "id": "user4",
+        "id": "d7a458ef6da644b",
         "name": "Bob Brown",
-        "email": "bobbrown@example.com",
+        "email": "bob.brown@example.com",
         "password": "password123",
         "passwordConfirm": "password123",
-        "profile_picture": "https://example.com/avatar4.jpg"
+        "profile_picture": ""
     },
     {
-        "id": "user5",
+        "id": "7a98c0a9ce3646b",
         "name": "Charlie Green",
-        "email": "charliegreen@example.com",
+        "email": "charlie.green@example.com",
         "password": "password123",
         "passwordConfirm": "password123",
-        "profile_picture": "https://example.com/avatar5.jpg"
+        "profile_picture": ""
     },
     {
-        "id": "user6",
+        "id": "07ec32692ee7401",
         "name": "Diana White",
-        "email": "dianawhite@example.com",
+        "email": "diana.white@example.com",
         "password": "password123",
         "passwordConfirm": "password123",
-        "profile_picture": "https://example.com/avatar6.jpg"
+        "profile_picture": ""
     },
     {
-        "id": "user7",
+        "id": "986b290d790e400",
         "name": "Ethan Harris",
-        "email": "ethanharris@example.com",
+        "email": "ethan.harris@example.com",
         "password": "password123",
         "passwordConfirm": "password123",
-        "profile_picture": "https://example.com/avatar7.jpg"
+        "profile_picture": ""
     },
     {
-        "id": "user8",
+        "id": "fdb5e9d24508403",
         "name": "Fiona Clark",
-        "email": "fionaclark@example.com",
+        "email": "fiona.clark@example.com",
         "password": "password123",
         "passwordConfirm": "password123",
-        "profile_picture": "https://example.com/avatar8.jpg"
+        "profile_picture": ""
     },
     {
-        "id": "user9",
+        "id": "3024e32641a742d",
         "name": "George Lewis",
-        "email": "georgelewis@example.com",
+        "email": "george.lewis@example.com",
         "password": "password123",
         "passwordConfirm": "password123",
-        "profile_picture": "https://example.com/avatar9.jpg"
+        "profile_picture": ""
     },
     {
-        "id": "user10",
+        "id": "730bca63e55b4d0",
         "name": "Hannah Walker",
-        "email": "hannahwalker@example.com",
+        "email": "hannah.walker@example.com",
         "password": "password123",
         "passwordConfirm": "password123",
-        "profile_picture": "https://example.com/avatar10.jpg"
+        "profile_picture": ""
     }
 ]

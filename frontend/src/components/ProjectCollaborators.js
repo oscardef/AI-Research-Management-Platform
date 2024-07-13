@@ -9,21 +9,19 @@ const ProjectCollaborators = ({ collaborators, project, getProfilePictureUrl, ed
 
   useEffect(() => {
     const fetchDetails = async () => {
-        try {
-          const collaboratorDetailList = await Promise.all(
-            project.collaborators.map(id => pb.collection('users').getOne(id, { expand: 'profile_picture' }))
-          );
-          setCollaboratorDetails(collaboratorDetailList);
-        } catch (error) {
-          console.error('Error fetching collaborator details:', error);
-        }
-      };
-    if (editing) {
-      fetchDetails();
-    }
-  }, [editing, project.collaborators]);
+      try {
+        const collaboratorDetailList = await Promise.all(
+          project.collaborators.map(id => pb.collection('users').getOne(id, { expand: 'profile_picture' }))
+        );
+        setCollaboratorDetails(collaboratorDetailList);
+      } catch (error) {
+        console.error('Error fetching collaborator details:', error);
+      }
+    };
+    fetchDetails();
+  }, [project.collaborators]);
 
-  const displayCollaborators = editing ? collaboratorDetails : collaborators.filter(c => (project.collaborators || []).includes(c.id));
+  const displayCollaborators = editing ? collaboratorDetails : collaboratorDetails.filter(c => (project.collaborators || []).includes(c.id));
 
   return (
     <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>

@@ -1,18 +1,41 @@
 [
     {
-        "id": "project1",
+        "id": "b76c93e6557844f",
         "title": "AI-Driven Climate Models",
         "description": "Developing advanced AI models to predict climate change scenarios. This project aims to leverage AI techniques to analyze and predict future climate patterns based on historical and real-time data. The models developed will help in understanding the impacts of climate change and aid in the creation of mitigation strategies.",
-        "tags": ["AI", "Climate Change", "Environment", "Data Analysis"],
+        "tags": [
+            "AI",
+            "Climate Change",
+            "Environment",
+            "Data Analysis"
+        ],
         "data_sources": [
-            {"key": "dataset1", "value": "https://example.com/dataset1"},
-            {"key": "dataset2", "value": "https://example.com/dataset2"},
-            {"key": "dataset3", "value": "https://example.com/dataset3"}
+            {
+                "key": "dataset1",
+                "value": "https://example.com/dataset1"
+            },
+            {
+                "key": "dataset2",
+                "value": "https://example.com/dataset2"
+            },
+            {
+                "key": "dataset3",
+                "value": "https://example.com/dataset3"
+            }
         ],
         "details": [
-            {"key": "goal", "value": "Improve accuracy of climate predictions."},
-            {"key": "duration", "value": "3 years"},
-            {"key": "budget", "value": "$1,000,000"}
+            {
+                "key": "goal",
+                "value": "Improve accuracy of climate predictions."
+            },
+            {
+                "key": "duration",
+                "value": "3 years"
+            },
+            {
+                "key": "budget",
+                "value": "$1,000,000"
+            }
         ],
         "public": true,
         "status": "active",
@@ -36,22 +59,50 @@
                 "url": "http://dx.doi.org/10.2172/1417315"
             }
         ],
-        "related_projects": ["project2", "project3", "project4"],
-        "related_models": ["model1", "model2", "model3"]
+        "related_projects": [
+            "dfea7e351a684fe",
+            "7e5c0703dbc841c",
+            "6f8827dddf9840d"
+        ],
+        "related_models": [
+            "f102ff88a61a44f",
+            "6f77f56e2aae47f",
+            "36c1b879dd4c477"
+        ]
     },
     {
-        "id": "project2",
+        "id": "dfea7e351a684fe",
         "title": "AI for Healthcare Diagnostics",
         "description": "Using AI to enhance the accuracy of medical diagnostics. This project focuses on developing AI algorithms to analyze medical images and patient data to identify diseases and conditions at an early stage. The goal is to reduce misdiagnosis rates and improve patient outcomes through more precise and timely diagnostics.",
-        "tags": ["AI", "Healthcare", "Diagnostics", "Medical Imaging"],
+        "tags": [
+            "AI",
+            "Healthcare",
+            "Diagnostics",
+            "Medical Imaging"
+        ],
         "data_sources": [
-            {"key": "dataset1", "value": "https://example.com/dataset1"},
-            {"key": "dataset2", "value": "https://example.com/dataset2"}
+            {
+                "key": "dataset1",
+                "value": "https://example.com/dataset1"
+            },
+            {
+                "key": "dataset2",
+                "value": "https://example.com/dataset2"
+            }
         ],
         "details": [
-            {"key": "goal", "value": "Reduce misdiagnosis rates."},
-            {"key": "duration", "value": "2 years"},
-            {"key": "collaborators", "value": "XYZ Medical Center"}
+            {
+                "key": "goal",
+                "value": "Reduce misdiagnosis rates."
+            },
+            {
+                "key": "duration",
+                "value": "2 years"
+            },
+            {
+                "key": "collaborators",
+                "value": "XYZ Medical Center"
+            }
         ],
         "public": false,
         "status": "active",
@@ -75,24 +126,58 @@
                 "url": "http://dx.doi.org/10.2172/1417317"
             }
         ],
-        "related_projects": ["project1", "project3", "project5"],
-        "related_models": ["model2", "model4", "model5"]
+        "related_projects": [
+            "b76c93e6557844f",
+            "7e5c0703dbc841c",
+            "06c8d91c436f44c"
+        ],
+        "related_models": [
+            "6f77f56e2aae47f",
+            "b895103d4002480",
+            "383987d887d147b"
+        ]
     },
     {
-        "id": "project3",
+        "id": "7e5c0703dbc841c",
         "title": "AI for Personalized Treatment Plans",
         "description": "Developing AI models to create personalized treatment plans for patients based on their medical history and genetic information. This project aims to tailor treatments to individual patients, increasing the effectiveness of therapies and reducing adverse effects. AI-driven insights will enable healthcare providers to offer more precise and personalized care.",
-        "tags": ["AI", "Healthcare", "Personalized Medicine", "Genetics"],
+        "tags": [
+            "AI",
+            "Healthcare",
+            "Personalized Medicine",
+            "Genetics"
+        ],
         "data_sources": [
-            {"key": "dataset1", "value": "https://example.com/dataset1"},
-            {"key": "dataset2", "value": "https://example.com/dataset2"},
-            {"key": "dataset3", "value": "https://example.com/dataset3"},
-            {"key": "dataset4", "value": "https://example.com/dataset4"}
+            {
+                "key": "dataset1",
+                "value": "https://example.com/dataset1"
+            },
+            {
+                "key": "dataset2",
+                "value": "https://example.com/dataset2"
+            },
+            {
+                "key": "dataset3",
+                "value": "https://example.com/dataset3"
+            },
+            {
+                "key": "dataset4",
+                "value": "https://example.com/dataset4"
+            }
         ],
         "details": [
-            {"key": "goal", "value": "Improve treatment efficacy and reduce adverse effects."},
-            {"key": "duration", "value": "3 years"},
-            {"key": "budget", "value": "$2,000,000"}
+            {
+                "key": "goal",
+                "value": "Improve treatment efficacy and reduce adverse effects."
+            },
+            {
+                "key": "duration",
+                "value": "3 years"
+            },
+            {
+                "key": "budget",
+                "value": "$2,000,000"
+            }
         ],
         "public": true,
         "status": "pending",
@@ -122,23 +207,54 @@
                 "url": "http://dx.doi.org/10.2172/1417320"
             }
         ],
-        "related_projects": ["project1", "project2", "project6"],
-        "related_models": ["model3", "model5", "model6"]
+        "related_projects": [
+            "b76c93e6557844f",
+            "dfea7e351a684fe",
+            "e7b73584d563439"
+        ],
+        "related_models": [
+            "36c1b879dd4c477",
+            "383987d887d147b",
+            "677145763cac40d"
+        ]
     },
     {
-        "id": "project4",
+        "id": "6f8827dddf9840d",
         "title": "AI in Early Disease Detection",
         "description": "Leveraging AI to detect diseases at an early stage through the analysis of patient data and medical imaging. This project focuses on developing machine learning models that can identify subtle patterns indicative of diseases like cancer, diabetes, and cardiovascular conditions, enabling earlier intervention and better patient outcomes.",
-        "tags": ["AI", "Healthcare", "Disease Detection", "Cancer"],
+        "tags": [
+            "AI",
+            "Healthcare",
+            "Disease Detection",
+            "Cancer"
+        ],
         "data_sources": [
-            {"key": "dataset1", "value": "https://example.com/dataset1"},
-            {"key": "dataset2", "value": "https://example.com/dataset2"},
-            {"key": "dataset3", "value": "https://example.com/dataset3"}
+            {
+                "key": "dataset1",
+                "value": "https://example.com/dataset1"
+            },
+            {
+                "key": "dataset2",
+                "value": "https://example.com/dataset2"
+            },
+            {
+                "key": "dataset3",
+                "value": "https://example.com/dataset3"
+            }
         ],
         "details": [
-            {"key": "goal", "value": "Enable early disease detection and intervention."},
-            {"key": "duration", "value": "3 years"},
-            {"key": "collaborators", "value": "ABC Health Institute"}
+            {
+                "key": "goal",
+                "value": "Enable early disease detection and intervention."
+            },
+            {
+                "key": "duration",
+                "value": "3 years"
+            },
+            {
+                "key": "collaborators",
+                "value": "ABC Health Institute"
+            }
         ],
         "public": false,
         "status": "active",
@@ -162,24 +278,58 @@
                 "url": "http://dx.doi.org/10.2172/1417322"
             }
         ],
-        "related_projects": ["project1", "project5", "project7"],
-        "related_models": ["model1", "model3", "model5"]
+        "related_projects": [
+            "b76c93e6557844f",
+            "06c8d91c436f44c",
+            "63f1fbbe10a2458"
+        ],
+        "related_models": [
+            "f102ff88a61a44f",
+            "36c1b879dd4c477",
+            "383987d887d147b"
+        ]
     },
     {
-        "id": "project5",
+        "id": "06c8d91c436f44c",
         "title": "AI for Predictive Healthcare Analytics",
         "description": "Using AI to analyze healthcare data and predict patient outcomes. This project involves the development of predictive models that can forecast disease progression, patient readmission, and treatment responses. The insights generated will help healthcare providers in making informed decisions, ultimately improving patient care and resource management.",
-        "tags": ["AI", "Healthcare", "Predictive Analytics", "Data Science"],
+        "tags": [
+            "AI",
+            "Healthcare",
+            "Predictive Analytics",
+            "Data Science"
+        ],
         "data_sources": [
-            {"key": "dataset1", "value": "https://example.com/dataset1"},
-            {"key": "dataset2", "value": "https://example.com/dataset2"},
-            {"key": "dataset3", "value": "https://example.com/dataset3"},
-            {"key": "dataset4", "value": "https://example.com/dataset4"}
+            {
+                "key": "dataset1",
+                "value": "https://example.com/dataset1"
+            },
+            {
+                "key": "dataset2",
+                "value": "https://example.com/dataset2"
+            },
+            {
+                "key": "dataset3",
+                "value": "https://example.com/dataset3"
+            },
+            {
+                "key": "dataset4",
+                "value": "https://example.com/dataset4"
+            }
         ],
         "details": [
-            {"key": "goal", "value": "Improve patient care through predictive analytics."},
-            {"key": "duration", "value": "2 years"},
-            {"key": "collaborators", "value": "LMN Health Systems"}
+            {
+                "key": "goal",
+                "value": "Improve patient care through predictive analytics."
+            },
+            {
+                "key": "duration",
+                "value": "2 years"
+            },
+            {
+                "key": "collaborators",
+                "value": "LMN Health Systems"
+            }
         ],
         "public": true,
         "status": "inactive",
@@ -209,25 +359,62 @@
                 "url": "http://dx.doi.org/10.2172/1417326"
             }
         ],
-        "related_projects": ["project2", "project4", "project6"],
-        "related_models": ["model1", "model6", "model7"]
+        "related_projects": [
+            "dfea7e351a684fe",
+            "6f8827dddf9840d",
+            "e7b73584d563439"
+        ],
+        "related_models": [
+            "f102ff88a61a44f",
+            "677145763cac40d",
+            "28cc4c6448ac446"
+        ]
     },
     {
-        "id": "project6",
+        "id": "e7b73584d563439",
         "title": "AI for Genomic Data Analysis",
         "description": "Applying AI techniques to analyze genomic data for insights into genetic disorders and personalized medicine. This project focuses on developing algorithms that can process large-scale genomic data to identify genetic variations associated with diseases. The findings will contribute to the development of personalized treatment plans and targeted therapies.",
-        "tags": ["AI", "Genomics", "Personalized Medicine", "Bioinformatics"],
+        "tags": [
+            "AI",
+            "Genomics",
+            "Personalized Medicine",
+            "Bioinformatics"
+        ],
         "data_sources": [
-            {"key": "dataset1", "value": "https://example.com/dataset1"},
-            {"key": "dataset2", "value": "https://example.com/dataset2"},
-            {"key": "dataset3", "value": "https://example.com/dataset3"},
-            {"key": "dataset4", "value": "https://example.com/dataset4"},
-            {"key": "dataset5", "value": "https://example.com/dataset5"}
+            {
+                "key": "dataset1",
+                "value": "https://example.com/dataset1"
+            },
+            {
+                "key": "dataset2",
+                "value": "https://example.com/dataset2"
+            },
+            {
+                "key": "dataset3",
+                "value": "https://example.com/dataset3"
+            },
+            {
+                "key": "dataset4",
+                "value": "https://example.com/dataset4"
+            },
+            {
+                "key": "dataset5",
+                "value": "https://example.com/dataset5"
+            }
         ],
         "details": [
-            {"key": "goal", "value": "Identify genetic markers for diseases and inform personalized treatments."},
-            {"key": "duration", "value": "3 years"},
-            {"key": "budget", "value": "$3,000,000"}
+            {
+                "key": "goal",
+                "value": "Identify genetic markers for diseases and inform personalized treatments."
+            },
+            {
+                "key": "duration",
+                "value": "3 years"
+            },
+            {
+                "key": "budget",
+                "value": "$3,000,000"
+            }
         ],
         "public": false,
         "status": "complete",
@@ -263,23 +450,54 @@
                 "url": "http://dx.doi.org/10.2172/1417331"
             }
         ],
-        "related_projects": ["project3", "project5", "project7"],
-        "related_models": ["model2", "model4", "model8"]
+        "related_projects": [
+            "7e5c0703dbc841c",
+            "06c8d91c436f44c",
+            "63f1fbbe10a2458"
+        ],
+        "related_models": [
+            "6f77f56e2aae47f",
+            "b895103d4002480",
+            "04abc78143a34a1"
+        ]
     },
     {
-        "id": "project7",
+        "id": "63f1fbbe10a2458",
         "title": "AI in Mental Health Monitoring",
         "description": "Developing AI models to monitor and assess mental health conditions. This project aims to use natural language processing and machine learning to analyze speech, text, and behavioral data to detect signs of mental health issues such as depression, anxiety, and PTSD. Early detection and intervention can significantly improve patient outcomes.",
-        "tags": ["AI", "Mental Health", "Monitoring", "NLP"],
+        "tags": [
+            "AI",
+            "Mental Health",
+            "Monitoring",
+            "NLP"
+        ],
         "data_sources": [
-            {"key": "dataset1", "value": "https://example.com/dataset1"},
-            {"key": "dataset2", "value": "https://example.com/dataset2"},
-            {"key": "dataset3", "value": "https://example.com/dataset3"}
+            {
+                "key": "dataset1",
+                "value": "https://example.com/dataset1"
+            },
+            {
+                "key": "dataset2",
+                "value": "https://example.com/dataset2"
+            },
+            {
+                "key": "dataset3",
+                "value": "https://example.com/dataset3"
+            }
         ],
         "details": [
-            {"key": "goal", "value": "Enhance mental health monitoring and early intervention."},
-            {"key": "duration", "value": "2 years"},
-            {"key": "collaborators", "value": "Mental Health Association"}
+            {
+                "key": "goal",
+                "value": "Enhance mental health monitoring and early intervention."
+            },
+            {
+                "key": "duration",
+                "value": "2 years"
+            },
+            {
+                "key": "collaborators",
+                "value": "Mental Health Association"
+            }
         ],
         "public": true,
         "status": "pending",
@@ -303,24 +521,58 @@
                 "url": "http://dx.doi.org/10.2172/1417334"
             }
         ],
-        "related_projects": ["project1", "project4", "project6"],
-        "related_models": ["model3", "model5", "model9"]
+        "related_projects": [
+            "b76c93e6557844f",
+            "6f8827dddf9840d",
+            "e7b73584d563439"
+        ],
+        "related_models": [
+            "36c1b879dd4c477",
+            "383987d887d147b",
+            "3d913696dadc43d"
+        ]
     },
     {
-        "id": "project8",
+        "id": "22e09d7a375a442",
         "title": "AI for Drug Discovery",
         "description": "Utilizing AI to accelerate the drug discovery process. This project involves the development of machine learning models to predict the efficacy and safety of new drug compounds. By analyzing chemical structures and biological data, AI can help identify promising drug candidates, reducing the time and cost associated with traditional drug discovery methods.",
-        "tags": ["AI", "Drug Discovery", "Healthcare", "Pharmacology"],
+        "tags": [
+            "AI",
+            "Drug Discovery",
+            "Healthcare",
+            "Pharmacology"
+        ],
         "data_sources": [
-            {"key": "dataset1", "value": "https://example.com/dataset1"},
-            {"key": "dataset2", "value": "https://example.com/dataset2"},
-            {"key": "dataset3", "value": "https://example.com/dataset3"},
-            {"key": "dataset4", "value": "https://example.com/dataset4"}
+            {
+                "key": "dataset1",
+                "value": "https://example.com/dataset1"
+            },
+            {
+                "key": "dataset2",
+                "value": "https://example.com/dataset2"
+            },
+            {
+                "key": "dataset3",
+                "value": "https://example.com/dataset3"
+            },
+            {
+                "key": "dataset4",
+                "value": "https://example.com/dataset4"
+            }
         ],
         "details": [
-            {"key": "goal", "value": "Accelerate the drug discovery process and identify effective treatments."},
-            {"key": "duration", "value": "3 years"},
-            {"key": "budget", "value": "$4,000,000"}
+            {
+                "key": "goal",
+                "value": "Accelerate the drug discovery process and identify effective treatments."
+            },
+            {
+                "key": "duration",
+                "value": "3 years"
+            },
+            {
+                "key": "budget",
+                "value": "$4,000,000"
+            }
         ],
         "public": false,
         "status": "active",
@@ -344,23 +596,54 @@
                 "url": "http://dx.doi.org/10.2172/1417337"
             }
         ],
-        "related_projects": ["project3", "project5", "project6"],
-        "related_models": ["model4", "model7", "model10"]
+        "related_projects": [
+            "7e5c0703dbc841c",
+            "06c8d91c436f44c",
+            "e7b73584d563439"
+        ],
+        "related_models": [
+            "b895103d4002480",
+            "28cc4c6448ac446",
+            "da37fafb7a28472"
+        ]
     },
     {
-        "id": "project9",
+        "id": "b4d8d23f9197434",
         "title": "AI for Remote Patient Monitoring",
         "description": "Developing AI systems to monitor patients remotely using wearable devices and mobile health apps. This project aims to enhance patient care by continuously tracking vital signs and health metrics, providing real-time insights to healthcare providers. Remote monitoring can improve chronic disease management and reduce hospital readmissions.",
-        "tags": ["AI", "Remote Monitoring", "Healthcare", "Wearables"],
+        "tags": [
+            "AI",
+            "Remote Monitoring",
+            "Healthcare",
+            "Wearables"
+        ],
         "data_sources": [
-            {"key": "dataset1", "value": "https://example.com/dataset1"},
-            {"key": "dataset2", "value": "https://example.com/dataset2"},
-            {"key": "dataset3", "value": "https://example.com/dataset3"}
+            {
+                "key": "dataset1",
+                "value": "https://example.com/dataset1"
+            },
+            {
+                "key": "dataset2",
+                "value": "https://example.com/dataset2"
+            },
+            {
+                "key": "dataset3",
+                "value": "https://example.com/dataset3"
+            }
         ],
         "details": [
-            {"key": "goal", "value": "Improve chronic disease management and reduce readmissions."},
-            {"key": "duration", "value": "2 years"},
-            {"key": "collaborators", "value": "Remote Health Inc."}
+            {
+                "key": "goal",
+                "value": "Improve chronic disease management and reduce readmissions."
+            },
+            {
+                "key": "duration",
+                "value": "2 years"
+            },
+            {
+                "key": "collaborators",
+                "value": "Remote Health Inc."
+            }
         ],
         "public": true,
         "status": "inactive",
@@ -390,25 +673,62 @@
                 "url": "http://dx.doi.org/10.2172/1417341"
             }
         ],
-        "related_projects": ["project7", "project8", "project10"],
-        "related_models": ["model5", "model6", "model10"]
+        "related_projects": [
+            "63f1fbbe10a2458",
+            "22e09d7a375a442",
+            "195595e964f64e8"
+        ],
+        "related_models": [
+            "383987d887d147b",
+            "677145763cac40d",
+            "da37fafb7a28472"
+        ]
     },
     {
-        "id": "project10",
+        "id": "195595e964f64e8",
         "title": "AI in Surgical Robotics",
         "description": "Exploring the use of AI in enhancing surgical robotics. This project involves developing AI algorithms to assist in surgical procedures, improving precision and outcomes. AI can help in preoperative planning, real-time decision-making during surgery, and postoperative care, ultimately enhancing patient safety and recovery.",
-        "tags": ["AI", "Surgical Robotics", "Healthcare", "Precision Medicine"],
+        "tags": [
+            "AI",
+            "Surgical Robotics",
+            "Healthcare",
+            "Precision Medicine"
+        ],
         "data_sources": [
-            {"key": "dataset1", "value": "https://example.com/dataset1"},
-            {"key": "dataset2", "value": "https://example.com/dataset2"},
-            {"key": "dataset3", "value": "https://example.com/dataset3"},
-            {"key": "dataset4", "value": "https://example.com/dataset4"},
-            {"key": "dataset5", "value": "https://example.com/dataset5"}
+            {
+                "key": "dataset1",
+                "value": "https://example.com/dataset1"
+            },
+            {
+                "key": "dataset2",
+                "value": "https://example.com/dataset2"
+            },
+            {
+                "key": "dataset3",
+                "value": "https://example.com/dataset3"
+            },
+            {
+                "key": "dataset4",
+                "value": "https://example.com/dataset4"
+            },
+            {
+                "key": "dataset5",
+                "value": "https://example.com/dataset5"
+            }
         ],
         "details": [
-            {"key": "goal", "value": "Enhance surgical precision and patient outcomes."},
-            {"key": "duration", "value": "3 years"},
-            {"key": "budget", "value": "$5,000,000"}
+            {
+                "key": "goal",
+                "value": "Enhance surgical precision and patient outcomes."
+            },
+            {
+                "key": "duration",
+                "value": "3 years"
+            },
+            {
+                "key": "budget",
+                "value": "$5,000,000"
+            }
         ],
         "public": false,
         "status": "active",
@@ -450,7 +770,15 @@
                 "url": "http://dx.doi.org/10.2172/1417347"
             }
         ],
-        "related_projects": ["project7", "project8", "project9"],
-        "related_models": ["model7", "model8", "model9"]
+        "related_projects": [
+            "63f1fbbe10a2458",
+            "22e09d7a375a442",
+            "b4d8d23f9197434"
+        ],
+        "related_models": [
+            "28cc4c6448ac446",
+            "04abc78143a34a1",
+            "3d913696dadc43d"
+        ]
     }
 ]

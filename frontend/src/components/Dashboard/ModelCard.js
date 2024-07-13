@@ -18,7 +18,7 @@ const ModelCard = ({ models, isOwnPage, handleDelete }) => {
               <ListItem key={model.id} component={Link} to={`/model/${model.id}`}>
                 <ListItemText
                   primary={model.name}
-                  secondary={`Version: ${model.version} | Metrics: ${model.performance_metrics}`}
+                  secondary={`${model.description}`}
                 />
                 {isOwnPage && (
                   <IconButton onClick={(event) => { event.preventDefault(); handleDelete(model, 'model'); }}>

@@ -5,7 +5,19 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { pb } from '../services/pocketbaseClient';
 import StatusBox from './StatusBox';
 
-const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, project, editing, handleNavigation, openModal, handleRemoveRelatedItem, handleChange, handleAddTag, handleRemoveTag }) => {
+const RelatedItems = ({
+  relatedProjects,
+  relatedModels,
+  relatedPublications,
+  project,
+  editing,
+  handleNavigation,
+  openModal,
+  handleRemoveRelatedItem,
+  handleChange,
+  handleAddTag,
+  handleRemoveTag
+}) => {
   const [projectDetails, setProjectDetails] = useState([]);
   const [modelDetails, setModelDetails] = useState([]);
   const [publicationDetails, setPublicationDetails] = useState([]);
@@ -27,21 +39,8 @@ const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, pro
         console.error('Error fetching details:', error);
       }
     };
-    if (editing) {
-      fetchDetails();
-    }
-  }, [editing, relatedProjects, relatedModels, relatedPublications]);
-
-  const statusColors = {
-    active: 'green',
-    complete: 'blue',
-    inactive: 'grey',
-    pending: 'orange',
-  };
-
-  const displayProjects = editing ? projectDetails : relatedProjects;
-  const displayModels = editing ? modelDetails : relatedModels;
-  const displayPublications = editing ? publicationDetails : relatedPublications;
+    fetchDetails();
+  }, [relatedProjects, relatedModels, relatedPublications]);
 
   const handleTagChange = (event) => {
     setNewTag(event.target.value);
@@ -53,6 +52,17 @@ const RelatedItems = ({ relatedProjects, relatedModels, relatedPublications, pro
       setNewTag('');
     }
   };
+
+  const getDisplayItems = (items, details) => {
+    if (editing) {
+      return items.map(id => details.find(item => item.id === id)).filter(item => item);
+    }
+    return details;
+  };
+
+  const displayProjects = getDisplayItems(project.related_projects, projectDetails);
+  const displayModels = getDisplayItems(project.related_models, modelDetails);
+  const displayPublications = getDisplayItems(project.related_publications, publicationDetails);
 
   return (
     <>

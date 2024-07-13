@@ -12,10 +12,10 @@ const RelatedItemsModel = ({ relatedProjects, relatedModels, editing, handleNavi
     const fetchDetails = async () => {
       try {
         const projects = await Promise.all(
-          tempModel.related_projects.map(id => pb.collection('research_projects').getOne(id))
+          (editing ? tempModel.related_projects : relatedProjects).map(id => pb.collection('research_projects').getOne(id))
         );
         const models = await Promise.all(
-          tempModel.related_models.map(id => pb.collection('models').getOne(id))
+          (editing ? tempModel.related_models : relatedModels).map(id => pb.collection('models').getOne(id))
         );
         setProjectDetails(projects);
         setModelDetails(models);
@@ -23,13 +23,27 @@ const RelatedItemsModel = ({ relatedProjects, relatedModels, editing, handleNavi
         console.error('Error fetching details:', error);
       }
     };
-    if (editing) {
-      fetchDetails();
-    }
-  }, [editing, tempModel.related_projects, tempModel.related_models]);
+    fetchDetails();
+  }, [editing, tempModel.related_projects, tempModel.related_models, relatedProjects, relatedModels]);
 
   const displayProjects = editing ? projectDetails : relatedProjects;
   const displayModels = editing ? modelDetails : relatedModels;
+
+  const renderListItem = (item, type) => (
+    <ListItem key={item.id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, cursor: 'pointer' }} onClick={() => handleNavigation(item.id, type)}>
+        <ListItemText
+          primary={item.title || item.name}
+          secondary={item.description ? item.description.substring(0, 50) + '...' : ''}
+        />
+      </Box>
+      {editing && (
+        <IconButton edge="end" aria-label="delete" onClick={(e) => { e.stopPropagation(); handleRemoveRelatedItem(`related_${type}s`, item.id); }}>
+          <DeleteIcon />
+        </IconButton>
+      )}
+    </ListItem>
+  );
 
   return (
     <>
@@ -50,18 +64,7 @@ const RelatedItemsModel = ({ relatedProjects, relatedModels, editing, handleNavi
                 </Button>
               </ListItem>
             )}
-            {displayProjects.map((project) => (
-              <ListItem key={project.id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, cursor: 'pointer' }} onClick={() => handleNavigation(project.id, 'project')}>
-                  <ListItemText primary={project.title} />
-                </Box>
-                {editing && (
-                  <IconButton edge="end" aria-label="delete" onClick={(e) => { e.stopPropagation(); handleRemoveRelatedItem('related_projects', project.id); }}>
-                    <DeleteIcon />
-                  </IconButton>
-                )}
-              </ListItem>
-            ))}
+            {displayProjects.map((project) => renderListItem(project, 'project'))}
           </List>
         </CardContent>
       </Card>
@@ -82,18 +85,7 @@ const RelatedItemsModel = ({ relatedProjects, relatedModels, editing, handleNavi
                 </Button>
               </ListItem>
             )}
-            {displayModels.map((model) => (
-              <ListItem key={model.id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, cursor: 'pointer' }} onClick={() => handleNavigation(model.id, 'model')}>
-                  <ListItemText primary={model.name} />
-                </Box>
-                {editing && (
-                  <IconButton edge="end" aria-label="delete" onClick={(e) => { e.stopPropagation(); handleRemoveRelatedItem('related_models', model.id); }}>
-                    <DeleteIcon />
-                  </IconButton>
-                )}
-              </ListItem>
-            ))}
+            {displayModels.map((model) => renderListItem(model, 'model'))}
           </List>
         </CardContent>
       </Card>

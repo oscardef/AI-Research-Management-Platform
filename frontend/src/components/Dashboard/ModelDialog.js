@@ -1,24 +1,59 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, MenuItem, Box, Autocomplete, CircularProgress, Typography } from '@mui/material';
+import { pb } from '../../services/pocketbaseClient'; 
 
-const ModelDialog = ({ 
-  open, 
-  handleClose, 
-  handleCreate, 
-  newModel, 
-  setNewModel, 
-  handleAddPerformanceMetric, 
-  handlePerformanceMetricChange, 
-  handleAddHyperparameter, 
-  handleHyperparameterChange, 
-  handleFileChange, 
-  selectedFileName, 
-  uploading, 
-  projects, 
-  models, 
-  filteredUsers,
-  session 
+
+const ModelDialog = ({
+  open,
+  handleClose,
+  handleCreate,
+  newModel,
+  setNewModel,
+  handleAddPerformanceMetric,
+  handlePerformanceMetricChange,
+  handleAddHyperparameter,
+  handleHyperparameterChange,
+  handleFileChange,
+  selectedFileName,
+  uploading,
+  session
 }) => {
+  const [projects, setProjects] = useState([]);
+  const [models, setModels] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchProjectsAndModels = async () => {
+      try {
+        const projectsData = await pb.collection('research_projects').getFullList(200, {
+          filter: `public=true || collaborators~'${session?.id}'`
+        });
+        const modelsData = await pb.collection('models').getFullList(200, {
+          filter: `public=true || collaborators~'${session?.id}'`
+        });
+
+        setProjects(projectsData);
+        setModels(modelsData);
+      } catch (error) {
+        console.error('Error fetching projects and models:', error);
+      }
+    };
+
+    const fetchUsers = async () => {
+      try {
+        const usersData = await pb.collection('users').getFullList(200);
+        setFilteredUsers(usersData.filter(user => user.id !== session?.id));
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    if (open) {
+      fetchProjectsAndModels();
+      fetchUsers();
+    }
+  }, [open, session?.id]);
+
   // Filter out the authenticated user and already selected collaborators
   const collaboratorOptions = filteredUsers.filter(
     (user) => user.id !== session?.id && !newModel.collaborators.some(collaborator => collaborator.id === user.id)

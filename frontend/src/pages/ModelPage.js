@@ -67,7 +67,6 @@ const ModelPage = () => {
   const handleSaveChanges = async () => {
     try {
       setUploading(true);
-      console.log("tempMod: ", tempModel)
       const updatedRecord = await pb.collection('models').update(modelId, {
         ...tempModel,
         tags: tempModel.tags.map(tag => tag.trim())
@@ -138,11 +137,14 @@ const ModelPage = () => {
     setDeployData({ ...deployData, file_url: e.target.value });
   };
 
-  const handleAddTag = (tag) => {
-    setTempModel(prevState => ({
-      ...prevState,
-      tags: [...(prevState.tags || []), tag]
-    }));
+  const handleAddTag = () => {
+    if (newTag.trim() !== '') {
+      setTempModel(prevState => ({
+        ...prevState,
+        tags: [...(prevState.tags || []), newTag.trim()]
+      }));
+      setNewTag('');
+    }
   };
 
   const handleRemoveTag = (tag) => {
@@ -650,3 +652,4 @@ const ModelPage = () => {
 };
 
 export default ModelPage;
+

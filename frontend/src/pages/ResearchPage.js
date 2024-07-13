@@ -196,9 +196,9 @@ const ResearchPage = () => {
             </Grid>
             <Grid item xs={12} md={4}>
               <RelatedItems
-                relatedProjects={relatedProjects}
-                relatedModels={relatedModels}
-                relatedPublications={relatedPublications}
+                relatedProjects={tempProject.related_projects || []}
+                relatedModels={tempProject.related_models || []}
+                relatedPublications={tempProject.related_publications || []}
                 project={tempProject}
                 editing={editing}
                 handleNavigation={handleNavigation}
