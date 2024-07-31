@@ -6,7 +6,13 @@ import SaveIcon from '@mui/icons-material/Save';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useDropzone } from 'react-dropzone';
 
+/**
+ * MyAccountPage component handles the user's profile management.
+ * Users can view, edit, and update their profile information, including
+ * personal details, research interests, and publications.
+ */
 const MyAccountPage = () => {
+  // State for profile data and backup for canceling edits
   const [profile, setProfile] = useState({
     research_interests: [],
     publications: [],
@@ -16,13 +22,20 @@ const MyAccountPage = () => {
     department: '',
   });
   const [backupProfile, setBackupProfile] = useState(null);
+
+  // States for managing new research interests and publications
   const [newResearchInterest, setNewResearchInterest] = useState('');
   const [newPublicationName, setNewPublicationName] = useState('');
   const [newPublicationUrl, setNewPublicationUrl] = useState('');
+
+  // State to handle editing mode
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Current authenticated user
   const user = pb.authStore.model;
 
+  // Fetch the user's profile data from PocketBase
   const fetchProfile = async () => {
     if (user) {
       try {
@@ -76,10 +89,12 @@ const MyAccountPage = () => {
     fetchProfile();
   }, []);
 
+  // Handle change in text fields
   const handleChange = (e) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
+  // Handle profile update
   const handleUpdate = async () => {
     console.log('Profile data before update:', profile);
     try {
@@ -114,11 +129,13 @@ const MyAccountPage = () => {
     }
   };
 
+  // Handle cancel edit action
   const handleCancel = () => {
     setProfile(backupProfile);
     setEditing(false);
   };
 
+  // Toggle between edit and view mode
   const toggleEdit = () => {
     if (editing) {
       handleCancel();
@@ -127,6 +144,7 @@ const MyAccountPage = () => {
     }
   };
 
+  // Handle profile picture drop and upload
   const onDrop = useCallback(async (acceptedFiles) => {
     if (acceptedFiles.length === 0) return;
 
@@ -147,6 +165,7 @@ const MyAccountPage = () => {
     accept: 'image/*'
   });
 
+  // Add a new research interest
   const addResearchInterest = () => {
     if (newResearchInterest.trim()) {
       setProfile((prevProfile) => ({
@@ -157,11 +176,13 @@ const MyAccountPage = () => {
     }
   };
 
+  // Remove an existing research interest
   const removeResearchInterest = (index) => {
     const updatedInterests = profile.research_interests.filter((_, i) => i !== index);
     setProfile({ ...profile, research_interests: updatedInterests });
   };
 
+  // Add a new publication
   const addPublication = () => {
     if (newPublicationName.trim() && newPublicationUrl.trim()) {
       const newPublication = { name: newPublicationName, url: newPublicationUrl };
@@ -174,6 +195,7 @@ const MyAccountPage = () => {
     }
   };
 
+  // Remove an existing publication
   const removePublication = (index) => {
     const updatedPublications = profile.publications.filter((_, i) => i !== index);
     setProfile({ ...profile, publications: updatedPublications });

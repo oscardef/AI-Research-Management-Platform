@@ -13,21 +13,20 @@ import RelatedItemsModel from '../components/RelatedItemsModel';
 import StatusBox from '../components/StatusBox';
 import useModel from '../hooks/useModel';
 
+/**
+ * ModelPage component displays detailed information about a specific AI model.
+ * It allows users to view and edit the model details, manage related projects and models, 
+ * handle model deployment, and update the model's status, tags, collaborators, and files.
+ */
 const ModelPage = () => {
-  const { session } = useAuth();
-  const { modelId } = useParams();
-  const navigate = useNavigate();
+  const { session } = useAuth(); // Get the current session from the AuthContext
+  const { modelId } = useParams(); // Extract modelId from URL parameters
+  const navigate = useNavigate(); // Hook to navigate programmatically
   const {
-    model,
-    loading,
-    relatedProjects,
-    relatedModels,
-    collaborators,
-    setModel,
-    fetchModel
-  } = useModel(modelId);
+    model, loading, relatedProjects, relatedModels, collaborators, setModel, fetchModel
+  } = useModel(modelId); // Custom hook to manage model data
 
-  const [editMode, setEditMode] = useState(false);
+  const [editMode, setEditMode] = useState(false); // State for toggling edit mode
   const [tempModel, setTempModel] = useState({
     name: '',
     description: '',
@@ -41,29 +40,30 @@ const ModelPage = () => {
     data_sources: [],
     hyperparameters: [],
     files: []
-  });
-  const [newTag, setNewTag] = useState('');
-  const [uploading, setUploading] = useState(false);
-  const [deployOpen, setDeployOpen] = useState(false);
-  const [deployData, setDeployData] = useState({
-    file_url: ''
-  });
-  const [deployLoading, setDeployLoading] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('');
+  }); // Temporary state for model data when editing
+  const [newTag, setNewTag] = useState(''); // State for new tag input
+  const [uploading, setUploading] = useState(false); // State for file upload progress
+  const [deployOpen, setDeployOpen] = useState(false); // State for deployment dialog visibility
+  const [deployData, setDeployData] = useState({ file_url: '' }); // State for deployment data
+  const [deployLoading, setDeployLoading] = useState(false); // State for deployment loading
+  const [modalOpen, setModalOpen] = useState(false); // State for modal visibility
+  const [modalType, setModalType] = useState(''); // State for modal type
 
+  // Update temporary model data when editMode or model changes
   useEffect(() => {
     if (!editMode) {
       setTempModel({ ...model });
     }
   }, [editMode, model]);
 
+  // Handle input changes for model fields
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
     setTempModel({ ...tempModel, [name]: newValue });
   };
 
+  // Save changes made to the model
   const handleSaveChanges = async () => {
     try {
       setUploading(true);
@@ -82,6 +82,7 @@ const ModelPage = () => {
     }
   };
 
+  // Handle the deployment of the model
   const handleDeploy = async () => {
     if (model.files && model.files.length > 0) {
       const fileUrl = pb.getFileUrl(model, deployData.file_url); // Get the file URL from PocketBase
@@ -122,10 +123,12 @@ const ModelPage = () => {
     }
   };
 
+  // Open the deployment dialog
   const handleDeployOpen = () => {
     setDeployOpen(true);
   };
 
+  // Close the deployment dialog
   const handleDeployClose = () => {
     setDeployOpen(false);
     setDeployData({
@@ -133,10 +136,12 @@ const ModelPage = () => {
     });
   };
 
+  // Handle selection of a file for deployment
   const handleFileSelect = (e) => {
     setDeployData({ ...deployData, file_url: e.target.value });
   };
 
+  // Add a new tag to the model
   const handleAddTag = () => {
     if (newTag.trim() !== '') {
       setTempModel(prevState => ({
@@ -147,6 +152,7 @@ const ModelPage = () => {
     }
   };
 
+  // Remove a tag from the model
   const handleRemoveTag = (tag) => {
     setTempModel(prevState => ({
       ...prevState,
@@ -154,6 +160,7 @@ const ModelPage = () => {
     }));
   };
 
+  // Add a new performance metric
   const handleAddPerformanceMetric = () => {
     setTempModel(prevState => ({
       ...prevState,
@@ -161,6 +168,7 @@ const ModelPage = () => {
     }));
   };
 
+  // Remove a performance metric
   const handleRemovePerformanceMetric = (index) => {
     setTempModel(prevState => ({
       ...prevState,
@@ -168,6 +176,7 @@ const ModelPage = () => {
     }));
   };
 
+  // Handle changes to performance metrics
   const handlePerformanceMetricChange = (e, index) => {
     const { name, value } = e.target;
     setTempModel(prevState => {
@@ -177,6 +186,7 @@ const ModelPage = () => {
     });
   };
 
+  // Add a new data source
   const handleAddDataSource = () => {
     setTempModel(prevState => ({
       ...prevState,
@@ -184,6 +194,7 @@ const ModelPage = () => {
     }));
   };
 
+  // Remove a data source
   const handleRemoveDataSource = (index) => {
     setTempModel(prevState => ({
       ...prevState,
@@ -191,6 +202,7 @@ const ModelPage = () => {
     }));
   };
 
+  // Handle changes to data sources
   const handleDataSourceChange = (e, index) => {
     const { name, value } = e.target;
     setTempModel(prevState => {
@@ -200,6 +212,7 @@ const ModelPage = () => {
     });
   };
 
+  // Add a new hyperparameter
   const handleAddHyperparameter = () => {
     setTempModel(prevState => ({
       ...prevState,
@@ -207,6 +220,7 @@ const ModelPage = () => {
     }));
   };
 
+  // Remove a hyperparameter
   const handleRemoveHyperparameter = (index) => {
     setTempModel(prevState => ({
       ...prevState,
@@ -214,6 +228,7 @@ const ModelPage = () => {
     }));
   };
 
+  // Handle changes to hyperparameters
   const handleHyperparameterChange = (e, index) => {
     const { name, value } = e.target;
     setTempModel(prevState => {
@@ -223,6 +238,7 @@ const ModelPage = () => {
     });
   };
 
+  // Handle file upload
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     const fileName = file.name;
@@ -246,6 +262,7 @@ const ModelPage = () => {
     }
   };
 
+  // Remove a file from the model
   const handleFileRemove = (fileName) => {
     try {
       setTempModel(prevState => ({
@@ -257,6 +274,7 @@ const ModelPage = () => {
     }
   };
 
+  // Add a new collaborator
   const handleAddCollaborator = (collaborator) => {
     setTempModel(prevState => ({
       ...prevState,
@@ -264,6 +282,7 @@ const ModelPage = () => {
     }));
   };
 
+  // Remove a collaborator
   const handleRemoveCollaborator = (id) => {
     setTempModel(prevState => ({
       ...prevState,
@@ -271,19 +290,23 @@ const ModelPage = () => {
     }));
   };
 
+  // Open a modal for adding related items
   const openModal = (type) => {
     setModalType(type);
     setModalOpen(true);
   };
 
+  // Close the modal
   const closeModal = () => {
     setModalOpen(false);
   };
 
+  // Handle navigation to a related project or model
   const handleNavigation = async (id, type) => {
     navigate(type === 'project' ? `/research/${id}` : `/model/${id}`);
   };
 
+  // Add items to the temporary model data
   const handleAdd = (items) => {
     setTempModel(prevState => {
       let updatedField = [...new Set([...(prevState[modalType] || []), ...items.map(item => item.id)])];
@@ -291,6 +314,7 @@ const ModelPage = () => {
     });
   };
 
+  // Remove a related item
   const handleRemoveRelatedItem = (type, id) => {
     setTempModel(prevState => {
       const updatedField = prevState[type].filter(item => item !== id);
@@ -298,16 +322,19 @@ const ModelPage = () => {
     });
   };
 
+  // Render loading state
   if (loading) {
     return <Typography>Loading...</Typography>;
   }
 
+  // Render model not found state
   if (!model) {
     return <Typography>Model not found.</Typography>;
   }
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
+      {/* Modal for searching and adding related items */}
       <SearchModal
         open={modalOpen}
         onClose={closeModal}
@@ -318,6 +345,7 @@ const ModelPage = () => {
       />
       <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
         <CardContent>
+          {/* Model name field */}
           <Typography variant="h4" align="center" gutterBottom>
             {editMode ? (
               <TextField
@@ -333,6 +361,7 @@ const ModelPage = () => {
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} md={8}>
+              {/* Model description field */}
               <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ mb: 1 }}>Description</Typography>
@@ -351,6 +380,7 @@ const ModelPage = () => {
                   )}
                 </CardContent>
               </Card>
+              {/* Model version field */}
               <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ mb: 1 }}>Version</Typography>
@@ -367,6 +397,7 @@ const ModelPage = () => {
                   )}
                 </CardContent>
               </Card>
+              {/* Performance metrics management */}
               <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ mb: 1 }}>Performance Metrics</Typography>
@@ -411,50 +442,7 @@ const ModelPage = () => {
                   )}
                 </CardContent>
               </Card>
-              <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
-                <CardContent>
-                  <Typography variant="h6" sx={{ mb: 1 }}>Data Sources</Typography>
-                  {editMode ? (
-                    <>
-                      {tempModel.data_sources.map((source, index) => (
-                        <Box key={index} sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
-                          <TextField
-                            variant="outlined"
-                            label="Source Key"
-                            name="key"
-                            value={source.key}
-                            onChange={(e) => handleDataSourceChange(e, index)}
-                            sx={{ mr: 2 }}
-                          />
-                          <TextField
-                            variant="outlined"
-                            label="Source Value"
-                            name="value"
-                            value={source.value}
-                            onChange={(e) => handleDataSourceChange(e, index)}
-                          />
-                          <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveDataSource(index)} sx={{ ml: 2 }}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </Box>
-                      ))}
-                      <Button variant="contained" onClick={handleAddDataSource} sx={{ mt: 2 }}>
-                        Add Source
-                      </Button>
-                    </>
-                  ) : (
-                    <Box>
-                      {model.data_sources.map((source, index) => (
-                        <Box key={index} sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
-                          <Typography variant="body1" sx={{ mr: 2 }}>
-                            <strong>{source.key}:</strong> {source.value}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
+              {/* Hyperparameters management */}
               <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ mb: 1 }}>Hyperparameters</Typography>
@@ -499,6 +487,7 @@ const ModelPage = () => {
                   )}
                 </CardContent>
               </Card>
+              {/* File management for model */}
               <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ mb: 1 }}>Files</Typography>
@@ -532,12 +521,14 @@ const ModelPage = () => {
               </Card>
             </Grid>
             <Grid item xs={12} md={4}>
+              {/* Status management */}
               <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ mb: 1 }}>Status</Typography>
                   <StatusBox status={tempModel.status} handleChange={handleChange} editing={editMode} />
                 </CardContent>
               </Card>
+              {/* Tags management */}
               <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ mb: 1 }}>Tags</Typography>
@@ -567,6 +558,7 @@ const ModelPage = () => {
                   </Box>
                 </CardContent>
               </Card>
+              {/* Collaborators management */}
               <ModelCollaborators
                 collaborators={collaborators}
                 model={tempModel}
@@ -576,6 +568,7 @@ const ModelPage = () => {
                 openModal={openModal}
                 navigate={navigate}
               />
+              {/* Related projects and models management */}
               <RelatedItemsModel
                 relatedProjects={relatedProjects}
                 relatedModels={relatedModels}
@@ -585,6 +578,7 @@ const ModelPage = () => {
                 handleRemoveRelatedItem={handleRemoveRelatedItem}
                 tempModel={tempModel}
               />
+              {/* Visibility management */}
               <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
                 <CardContent>
                   <Typography variant="h6" sx={{ mb: 1 }}>Visibility</Typography>
@@ -628,6 +622,7 @@ const ModelPage = () => {
         </CardActions>
       </Card>
 
+      {/* Dialog for deployment */}
       <Dialog open={deployOpen} onClose={handleDeployClose}>
         <DialogTitle>Deploy to UbiOps</DialogTitle>
         <DialogContent>
@@ -652,4 +647,3 @@ const ModelPage = () => {
 };
 
 export default ModelPage;
-

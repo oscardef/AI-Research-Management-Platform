@@ -2,7 +2,30 @@ import React, { useEffect, useState } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, MenuItem, Box, Autocomplete, CircularProgress, Typography } from '@mui/material';
 import { pb } from '../../services/pocketbaseClient'; 
 
-
+/**
+ * ModelDialog Component
+ * 
+ * This component provides a modal dialog interface for uploading and configuring new AI models. 
+ * It includes fields for model details, performance metrics, hyperparameters, related projects, related models, 
+ * collaborators, and tags. Users can also upload a file associated with the model.
+ * 
+ * @param {Object} props - The properties passed to the component.
+ * @param {boolean} props.open - Boolean indicating if the dialog is open.
+ * @param {function} props.handleClose - Function to handle closing the dialog.
+ * @param {function} props.handleCreate - Function to handle creating a new model.
+ * @param {Object} props.newModel - The state object containing the new model's data.
+ * @param {function} props.setNewModel - Function to update the new model's data.
+ * @param {function} props.handleAddPerformanceMetric - Function to add a new performance metric.
+ * @param {function} props.handlePerformanceMetricChange - Function to handle changes to performance metrics.
+ * @param {function} props.handleAddHyperparameter - Function to add a new hyperparameter.
+ * @param {function} props.handleHyperparameterChange - Function to handle changes to hyperparameters.
+ * @param {function} props.handleFileChange - Function to handle file selection.
+ * @param {string} props.selectedFileName - The name of the selected file.
+ * @param {boolean} props.uploading - Boolean indicating if a file is currently being uploaded.
+ * @param {Object} props.session - The current user session data.
+ * 
+ * @returns {React.Element} The rendered ModelDialog component.
+ */
 const ModelDialog = ({
   open,
   handleClose,
@@ -22,12 +45,15 @@ const ModelDialog = ({
   const [models, setModels] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
 
+  // Fetch projects, models, and users when the dialog opens
   useEffect(() => {
     const fetchProjectsAndModels = async () => {
       try {
+        // Fetch public or user-collaborated projects
         const projectsData = await pb.collection('research_projects').getFullList(200, {
           filter: `public=true || collaborators~'${session?.id}'`
         });
+        // Fetch public or user-collaborated models
         const modelsData = await pb.collection('models').getFullList(200, {
           filter: `public=true || collaborators~'${session?.id}'`
         });
@@ -41,6 +67,7 @@ const ModelDialog = ({
 
     const fetchUsers = async () => {
       try {
+        // Fetch all users and filter out the current session user
         const usersData = await pb.collection('users').getFullList(200);
         setFilteredUsers(usersData.filter(user => user.id !== session?.id));
       } catch (error) {
@@ -54,13 +81,13 @@ const ModelDialog = ({
     }
   }, [open, session?.id]);
 
-  // Filter out the authenticated user and already selected collaborators
+  // Filter out the current user and already selected collaborators from collaborator options
   const collaboratorOptions = filteredUsers.filter(
     (user) => user.id !== session?.id && !newModel.collaborators.some(collaborator => collaborator.id === user.id)
   );
 
+  // Update the model's collaborators, ensuring the current user is always included
   const handleCollaboratorChange = (event, newValue) => {
-    // Ensure the authenticated user is always in the list
     const filteredNewValue = newValue.filter(collaborator => collaborator.id !== session?.id);
     setNewModel({ ...newModel, collaborators: [{ id: session?.id, name: session?.name }, ...filteredNewValue] });
   };
@@ -102,6 +129,7 @@ const ModelDialog = ({
           onChange={(e) => setNewModel({ ...newModel, version: e.target.value })}
           sx={{ mb: 2 }}
         />
+        {/* Performance metrics input fields */}
         {newModel.performance_metrics.map((metric, index) => (
           <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <TextField
@@ -125,6 +153,7 @@ const ModelDialog = ({
         >
           Add Performance Metric
         </Button>
+        {/* Hyperparameters input fields */}
         {newModel.hyperparameters.map((param, index) => (
           <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <TextField
@@ -148,6 +177,7 @@ const ModelDialog = ({
         >
           Add Hyperparameter
         </Button>
+        {/* Model status dropdown */}
         <TextField
           select
           margin="dense"
@@ -164,6 +194,7 @@ const ModelDialog = ({
           <MenuItem value="inactive">Inactive</MenuItem>
           <MenuItem value="pending">Pending</MenuItem>
         </TextField>
+        {/* Autocomplete for related projects */}
         <Autocomplete
           multiple
           options={projects}
@@ -175,6 +206,7 @@ const ModelDialog = ({
           )}
           sx={{ mb: 2 }}
         />
+        {/* Autocomplete for related models */}
         <Autocomplete
           multiple
           options={models}
@@ -186,6 +218,7 @@ const ModelDialog = ({
           )}
           sx={{ mb: 2 }}
         />
+        {/* Autocomplete for adding collaborators */}
         <Autocomplete
           multiple
           options={collaboratorOptions}
@@ -197,6 +230,7 @@ const ModelDialog = ({
           )}
           sx={{ mb: 2 }}
         />
+        {/* Autocomplete for adding tags */}
         <Autocomplete
           multiple
           freeSolo
@@ -208,6 +242,7 @@ const ModelDialog = ({
           )}
           sx={{ mb: 2 }}
         />
+        {/* File upload button */}
         <Button
           variant="contained"
           component="label"
@@ -221,6 +256,7 @@ const ModelDialog = ({
             onChange={handleFileChange}
           />
         </Button>
+        {/* Display selected file name */}
         {selectedFileName && (
           <Typography variant="body2" sx={{ mt: 1 }}>
             Selected file: {selectedFileName}

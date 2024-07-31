@@ -5,6 +5,26 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { pb } from '../services/pocketbaseClient';
 import StatusBox from './StatusBox';
 
+/**
+ * RelatedItems Component
+ * 
+ * This component manages and displays related items for a project, including related projects, models, and publications.
+ * It also handles the project's status and tags.
+ * 
+ * @param {Array} relatedProjects - List of related project IDs.
+ * @param {Array} relatedModels - List of related model IDs.
+ * @param {Array} relatedPublications - List of related publication objects.
+ * @param {Object} project - The current project object.
+ * @param {Boolean} editing - Whether the component is in editing mode.
+ * @param {Function} handleNavigation - Function to navigate to a specific project or model page.
+ * @param {Function} openModal - Function to open the modal for adding related items.
+ * @param {Function} handleRemoveRelatedItem - Function to remove a related item.
+ * @param {Function} handleChange - Function to handle changes to the project's status or tags.
+ * @param {Function} handleAddTag - Function to add a new tag.
+ * @param {Function} handleRemoveTag - Function to remove a tag.
+ * 
+ * @returns {JSX.Element} The rendered component.
+ */
 const RelatedItems = ({
   relatedProjects,
   relatedModels,
@@ -18,14 +38,17 @@ const RelatedItems = ({
   handleAddTag,
   handleRemoveTag
 }) => {
+  // State variables for storing detailed information about related items
   const [projectDetails, setProjectDetails] = useState([]);
   const [modelDetails, setModelDetails] = useState([]);
   const [publicationDetails, setPublicationDetails] = useState([]);
   const [newTag, setNewTag] = useState('');
 
+  // Fetch detailed information about related projects, models, and publications
   useEffect(() => {
     const fetchDetails = async () => {
       try {
+        // Fetch details for related projects and models using their IDs
         const projects = await Promise.all(
           relatedProjects.map(id => pb.collection('research_projects').getOne(id))
         );
@@ -34,7 +57,7 @@ const RelatedItems = ({
         );
         setProjectDetails(projects);
         setModelDetails(models);
-        setPublicationDetails(relatedPublications);
+        setPublicationDetails(relatedPublications); // Directly use provided relatedPublications
       } catch (error) {
         console.error('Error fetching details:', error);
       }
@@ -42,17 +65,20 @@ const RelatedItems = ({
     fetchDetails();
   }, [relatedProjects, relatedModels, relatedPublications]);
 
+  // Handle change in new tag input field
   const handleTagChange = (event) => {
     setNewTag(event.target.value);
   };
 
+  // Add new tag to the project
   const handleAddNewTag = () => {
     if (newTag.trim()) {
       handleAddTag(newTag.trim());
-      setNewTag('');
+      setNewTag(''); // Reset the input field
     }
   };
 
+  // Determine which items to display based on editing mode
   const getDisplayItems = (items, details) => {
     if (editing) {
       return items.map(id => details.find(item => item.id === id)).filter(item => item);
@@ -60,6 +86,7 @@ const RelatedItems = ({
     return details;
   };
 
+  // Get the displayable items for related projects, models, and publications
   const displayProjects = getDisplayItems(project.related_projects, projectDetails);
   const displayModels = getDisplayItems(project.related_models, modelDetails);
   const displayPublications = getDisplayItems(project.related_publications, publicationDetails);

@@ -2,13 +2,17 @@ import requests
 import json
 import os
 import random
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # URL of your PocketBase instance
 POCKETBASE_URL = "http://127.0.0.1:8090"
 
-# Admin credentials
-ADMIN_EMAIL = "oscar.defrancesca@gmail.com"
-ADMIN_PASSWORD = "0123456789"
+# Admin credentials from environment variables
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
 
 def authenticate():
     url = f"{POCKETBASE_URL}/api/admins/auth-with-password"

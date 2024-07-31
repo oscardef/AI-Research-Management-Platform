@@ -1,5 +1,0 @@
-fastapi
-uvicorn
-supabase
-pydantic-settings
-python-jose

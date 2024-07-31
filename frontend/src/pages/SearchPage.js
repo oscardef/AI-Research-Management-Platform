@@ -10,29 +10,38 @@ import ModelResult from '../components/SearchResult/ModelResult';
 import ResearchProjectResult from '../components/SearchResult/ResearchProjectResult';
 import PublicationResult from '../components/SearchResult/PublicationResult';
 
+/**
+ * SearchPage component for conducting searches across profiles, models, research projects, and publications.
+ * Allows filtering of search results and supports pagination.
+ */
 const SearchPage = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [profileResults, setProfileResults] = useState([]);
-  const [modelResults, setModelResults] = useState([]);
-  const [researchProjectResults, setResearchProjectResults] = useState([]);
-  const [publicationResults, setPublicationResults] = useState([]);
-  const [anchorEl, setAnchorEl] = useState(null);
+  // State variables
+  const [searchTerm, setSearchTerm] = useState(''); // The search input value
+  const [profileResults, setProfileResults] = useState([]); // Profile search results
+  const [modelResults, setModelResults] = useState([]); // Model search results
+  const [researchProjectResults, setResearchProjectResults] = useState([]); // Research project search results
+  const [publicationResults, setPublicationResults] = useState([]); // Publication search results
+  const [anchorEl, setAnchorEl] = useState(null); // Anchor for filter menu
   const [filters, setFilters] = useState({
     profiles: true,
     models: true,
     researchProjects: true,
     publications: true,
-  });
-  const [profilePage, setProfilePage] = useState(1);
-  const [modelPage, setModelPage] = useState(1);
-  const [researchProjectPage, setResearchProjectPage] = useState(1);
-  const [publicationPage, setPublicationPage] = useState(1);
-  const [totalProfilePages, setTotalProfilePages] = useState(1);
-  const [totalModelPages, setTotalModelPages] = useState(1);
-  const [totalResearchProjectPages, setTotalResearchProjectPages] = useState(1);
-  const [totalPublicationPages, setTotalPublicationPages] = useState(1);
+  }); // Filter states
+  const [profilePage, setProfilePage] = useState(1); // Current page for profile results
+  const [modelPage, setModelPage] = useState(1); // Current page for model results
+  const [researchProjectPage, setResearchProjectPage] = useState(1); // Current page for research project results
+  const [publicationPage, setPublicationPage] = useState(1); // Current page for publication results
+  const [totalProfilePages, setTotalProfilePages] = useState(1); // Total pages for profile results
+  const [totalModelPages, setTotalModelPages] = useState(1); // Total pages for model results
+  const [totalResearchProjectPages, setTotalResearchProjectPages] = useState(1); // Total pages for research project results
+  const [totalPublicationPages, setTotalPublicationPages] = useState(1); // Total pages for publication results
   const RESULTS_PER_PAGE = 10; // Number of results per page
 
+  /**
+   * Executes the search operation based on the current filters and search term.
+   * Fetches data from PocketBase for profiles, models, and research projects, and from CrossRef for publications.
+   */
   const handleSearch = async () => {
     if (!searchTerm) {
       return; // Do not perform search if the search term is empty
@@ -41,6 +50,7 @@ const SearchPage = () => {
     try {
       const promises = [];
 
+      // Fetch profile results if the filter is active
       if (filters.profiles) {
         promises.push(
           pb.collection('profiles').getList(profilePage, RESULTS_PER_PAGE, {
@@ -64,6 +74,8 @@ const SearchPage = () => {
           })
         );
       }
+
+      // Fetch model results if the filter is active
       if (filters.models) {
         promises.push(
           pb.collection('models').getList(modelPage, RESULTS_PER_PAGE, {
@@ -78,6 +90,8 @@ const SearchPage = () => {
           }))
         );
       }
+
+      // Fetch research project results if the filter is active
       if (filters.researchProjects) {
         promises.push(
           pb.collection('research_projects').getList(researchProjectPage, RESULTS_PER_PAGE, {
@@ -92,6 +106,8 @@ const SearchPage = () => {
           }))
         );
       }
+
+      // Fetch publication results if the filter is active
       if (filters.publications) {
         promises.push(
           axios.get(`https://api.crossref.org/works?query=${searchTerm}&rows=${RESULTS_PER_PAGE}&offset=${(publicationPage - 1) * RESULTS_PER_PAGE}`)
@@ -107,8 +123,10 @@ const SearchPage = () => {
         );
       }
 
+      // Await all promises and process results
       const results = await Promise.all(promises);
 
+      // Process and set the results for each type
       const profileResults = filters.profiles ? results[0].items : [];
       const totalProfilePages = filters.profiles ? Math.ceil(results[0].totalItems / RESULTS_PER_PAGE) : 1;
       const modelResults = filters.models ? results[filters.profiles ? 1 : 0].items : [];
@@ -118,6 +136,7 @@ const SearchPage = () => {
       const publicationResults = filters.publications ? results[(filters.profiles ? 1 : 0) + (filters.models ? 1 : 0) + (filters.researchProjects ? 1 : 0)].items : [];
       const totalPublicationPages = filters.publications ? Math.ceil(results[(filters.profiles ? 1 : 0) + (filters.models ? 1 : 0) + (filters.researchProjects ? 1 : 0)].totalResults / RESULTS_PER_PAGE) : 1;
 
+      // Update state with the fetched data
       setProfileResults(profileResults);
       setTotalProfilePages(totalProfilePages);
       setModelResults(modelResults);
@@ -133,26 +152,42 @@ const SearchPage = () => {
     }
   };
 
+  // Effect hook to fetch data when filters or page numbers change
   useEffect(() => {
     if (searchTerm) {
       handleSearch();
     }
   }, [filters, profilePage, modelPage, researchProjectPage, publicationPage]);
 
+  /**
+   * Handles key press events, triggering the search if the Enter key is pressed.
+   * @param {object} event - The event object from the key press.
+   */
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
       handleSearch();
     }
   };
 
+  /**
+   * Opens the filter menu.
+   * @param {object} event - The event object from the button click.
+   */
   const handleFilterMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
+  /**
+   * Closes the filter menu.
+   */
   const handleFilterMenuClose = () => {
     setAnchorEl(null);
   };
 
+  /**
+   * Updates the filter state when a filter option is changed.
+   * @param {object} event - The event object from the checkbox change.
+   */
   const handleFilterChange = (event) => {
     setFilters({
       ...filters,
@@ -160,6 +195,11 @@ const SearchPage = () => {
     });
   };
 
+  /**
+   * Handles pagination changes for the various result types.
+   * @param {string} type - The type of result to paginate (profiles, models, researchProjects, publications).
+   * @param {number} direction - The direction to paginate (-1 for previous, 1 for next).
+   */
   const handlePageChange = (type, direction) => {
     switch (type) {
       case 'profiles':

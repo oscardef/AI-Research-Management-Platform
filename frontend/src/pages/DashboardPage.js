@@ -1,3 +1,4 @@
+// Import React and necessary hooks/components from Material-UI and other libraries
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Grid, Button, CircularProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -10,21 +11,25 @@ import DeleteConfirmationDialog from '../components/Dashboard/DeleteConfirmation
 import ProjectDialog from '../components/Dashboard/ProjectDialog';
 import ModelDialog from '../components/Dashboard/ModelDialog';
 
+// DashboardPage component definition
 const DashboardPage = () => {
+  // Extract session information from AuthContext and userId from URL parameters
   const { session } = useAuth();
   const { userId } = useParams();
-  const [projects, setProjects] = useState([]);
-  const [myProjects, setMyProjects] = useState([]);
-  const [models, setModels] = useState([]);
-  const [allUsers, setAllUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState('');
-  const [openProjectDialog, setOpenProjectDialog] = useState(false);
-  const [openModelDialog, setOpenModelDialog] = useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [deleteItem, setDeleteItem] = useState(null);
-  const [newProject, setNewProject] = useState({
+
+  // State variables
+  const [projects, setProjects] = useState([]); // List of projects
+  const [myProjects, setMyProjects] = useState([]); // Projects owned by the user
+  const [models, setModels] = useState([]); // List of models
+  const [allUsers, setAllUsers] = useState([]); // All users in the system
+  const [filteredUsers, setFilteredUsers] = useState([]); // Users excluding the current user
+  const [loading, setLoading] = useState(true); // Loading state
+  const [userName, setUserName] = useState(''); // User's name
+  const [openProjectDialog, setOpenProjectDialog] = useState(false); // Project dialog visibility
+  const [openModelDialog, setOpenModelDialog] = useState(false); // Model dialog visibility
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false); // Delete confirmation dialog visibility
+  const [deleteItem, setDeleteItem] = useState(null); // Item to delete
+  const [newProject, setNewProject] = useState({ // New project data
     title: '',
     description: '',
     status: 'active',
@@ -37,7 +42,7 @@ const DashboardPage = () => {
     data_sources: [],
     public: false
   });
-  const [newModel, setNewModel] = useState({
+  const [newModel, setNewModel] = useState({ // New model data
     name: '',
     description: '',
     version: '',
@@ -47,16 +52,20 @@ const DashboardPage = () => {
     collaborators: [{ id: session?.id, name: session?.name }],
     related_projects: [],
     related_models: [],
+    data_sources: [],
     tags: [],
     public: false
   });
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [selectedFileName, setSelectedFileName] = useState('');
-  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null); // Selected file for model upload
+  const [selectedFileName, setSelectedFileName] = useState(''); // Name of the selected file
+  const [uploading, setUploading] = useState(false); // Uploading state
 
+  // Check if the dashboard belongs to the logged-in user
   const isOwnPage = session?.id === userId;
 
+  // useEffect hook to fetch data on component mount or when userId/session changes
   useEffect(() => {
+    // Fetch user data from PocketBase
     const fetchUserData = async () => {
       try {
         const user = await pb.collection('users').getOne(userId);
@@ -66,6 +75,7 @@ const DashboardPage = () => {
       }
     };
 
+    // Fetch projects from PocketBase
     const fetchProjects = async () => {
       if (userId) {
         try {
@@ -84,6 +94,7 @@ const DashboardPage = () => {
       }
     };
 
+    // Fetch models from PocketBase
     const fetchModels = async () => {
       if (userId) {
         try {
@@ -101,6 +112,7 @@ const DashboardPage = () => {
       }
     };
 
+    // Fetch all users from PocketBase
     const fetchUsers = async () => {
       try {
         const usersData = await pb.collection('users').getFullList(200);
@@ -112,13 +124,15 @@ const DashboardPage = () => {
       }
     };
 
+    // Call the data fetching functions
     fetchUserData();
     fetchProjects();
     fetchModels();
     fetchUsers();
-    setLoading(false);
+    setLoading(false); // Set loading to false after data fetching
   }, [userId, session?.id, isOwnPage]);
 
+  // Handlers for dialog visibility toggles
   const handleOpenProjectDialog = () => {
     setOpenProjectDialog(true);
   };
@@ -164,6 +178,7 @@ const DashboardPage = () => {
     setUploading(false);
   };
 
+  // File selection handler
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     console.log("file: ", file);
@@ -171,11 +186,13 @@ const DashboardPage = () => {
     setSelectedFileName(file ? file.name : '');
   };
 
+  // Handler for opening the delete confirmation dialog
   const handleDelete = (item, type) => {
     setDeleteItem({ item, type });
     setOpenDeleteDialog(true);
   };
 
+  // Handler for confirming the deletion of a project or model
   const handleDeleteConfirm = async () => {
     const { item, type } = deleteItem;
     try {
@@ -195,6 +212,7 @@ const DashboardPage = () => {
     setOpenDeleteDialog(false);
   };
 
+  // Handler for creating a new project
   const handleCreateProject = async () => {
     const projectData = {
       title: newProject.title,
@@ -221,6 +239,7 @@ const DashboardPage = () => {
     }
   };
 
+  // Handler for creating a new model
   const handleCreateModel = async () => {
     if (selectedFile && session) {
       setUploading(true);
@@ -255,6 +274,7 @@ const DashboardPage = () => {
     }
   };
 
+  // Handlers for adding and changing hyperparameters, performance metrics, project details, and data sources
   const handleAddHyperparameter = () => {
     setNewModel(prevState => ({
       ...prevState,
@@ -307,10 +327,12 @@ const DashboardPage = () => {
     setNewProject({ ...newProject, data_sources: newDataSources });
   };
 
+  // Render loading spinner or dashboard content based on loading state
   if (loading) {
     return <Typography>Loading...</Typography>;
   }
 
+  // Render dashboard page with project and model cards, dialogs, and buttons
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', p: 3 }}>
       <Typography variant="h4" align="center" sx={{ mb: 4 }}>
@@ -400,4 +422,5 @@ const DashboardPage = () => {
   );
 };
 
+// Export the DashboardPage component as default
 export default DashboardPage;

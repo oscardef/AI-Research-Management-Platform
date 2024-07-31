@@ -11,15 +11,19 @@ import { ProjectDescription, ProjectDetails } from '../components/ProjectDetails
 import ProjectCollaborators from '../components/ProjectCollaborators';
 import RelatedItems from '../components/RelatedItems';
 
+/**
+ * ResearchPage component for displaying and editing research project details.
+ * It handles the presentation and modification of project data, including related items and collaborators.
+ */
 const ResearchPage = () => {
-  const { projectId } = useParams();
+  const { projectId } = useParams(); // Extract projectId from URL parameters
   const { project, loading, relatedProjects, relatedModels, relatedPublications, collaborators, setProject, fetchProject } = useProject(projectId);
-  const [editing, setEditing] = useState(false);
-  const [tempProject, setTempProject] = useState({});
-  const [originalProject, setOriginalProject] = useState({});
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('');
-  const navigate = useNavigate();
+  const [editing, setEditing] = useState(false); // State to toggle edit mode
+  const [tempProject, setTempProject] = useState({}); // Temporary state for project changes
+  const [originalProject, setOriginalProject] = useState({}); // State to hold the original project data
+  const [modalOpen, setModalOpen] = useState(false); // State to control the open/close status of the search modal
+  const [modalType, setModalType] = useState(''); // State to specify the type of items in the search modal
+  const navigate = useNavigate(); // Navigation hook for routing
 
   useEffect(() => {
     if (!editing) {
@@ -28,13 +32,16 @@ const ResearchPage = () => {
     }
   }, [editing, project]);
 
+  // Function to toggle edit mode
   const toggleEdit = () => setEditing(!editing);
 
+  // Function to cancel editing and reset changes
   const handleCancel = () => {
     setEditing(false);
     setTempProject({ ...originalProject });
   };
 
+  // Function to save changes made to the project
   const handleSave = async () => {
     try {
       await pb.collection('research_projects').update(project.id, tempProject);
@@ -47,6 +54,7 @@ const ResearchPage = () => {
     }
   };
 
+  // Function to handle changes in input fields
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name.includes('.')) {
@@ -64,6 +72,7 @@ const ResearchPage = () => {
     }
   };
 
+  // Function to add a new detail item
   const handleAddDetail = () => {
     setTempProject(prevState => ({
       ...prevState,
@@ -71,6 +80,7 @@ const ResearchPage = () => {
     }));
   };
 
+  // Function to remove a detail item
   const handleRemoveDetail = (index) => {
     setTempProject(prevState => {
       const updatedDetails = prevState.details.filter((_, i) => i !== index);
@@ -78,6 +88,7 @@ const ResearchPage = () => {
     });
   };
 
+  // Function to add items (e.g., related projects, models) using the modal
   const handleAdd = (items) => {
     setTempProject(prevState => {
       let updatedField;
@@ -100,6 +111,7 @@ const ResearchPage = () => {
     });
   };
 
+  // Function to remove related items (e.g., projects, models, publications)
   const handleRemoveRelatedItem = (type, id) => {
     setTempProject(prevState => {
       const updatedField = prevState[type].filter(item => {
@@ -112,6 +124,7 @@ const ResearchPage = () => {
     });
   };
 
+  // Function to remove a collaborator
   const handleRemoveCollaborator = (id) => {
     setTempProject(prevState => ({
       ...prevState,
@@ -119,6 +132,7 @@ const ResearchPage = () => {
     }));
   };
 
+  // Function to add a new tag
   const handleAddTag = (tag) => {
     setTempProject(prevState => ({
       ...prevState,
@@ -126,6 +140,7 @@ const ResearchPage = () => {
     }));
   };
 
+  // Function to remove a tag
   const handleRemoveTag = (tag) => {
     setTempProject(prevState => ({
       ...prevState,
@@ -133,15 +148,18 @@ const ResearchPage = () => {
     }));
   };
 
+  // Function to open the search modal
   const openModal = (type) => {
     setModalType(type);
     setModalOpen(true);
   };
 
+  // Function to close the search modal
   const closeModal = () => {
     setModalOpen(false);
   };
 
+  // Function to handle navigation to other projects or models
   const handleNavigation = async (id, type) => {
     navigate(type === 'project' ? `/research/${id}` : `/model/${id}`);
     await fetchProject(id); // Fetch the project data when navigating

@@ -6,13 +6,21 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { pb } from '../services/pocketbaseClient';
 import ProfileResult from '../components/SearchResult/ProfileResult';
 
+/**
+ * ProfilesPage component for searching and displaying user profiles.
+ * It allows users to search profiles based on various criteria and paginate through results.
+ */
 const ProfilesPage = () => {
+  // State to manage search term, search results, pagination, and total pages
   const [searchTerm, setSearchTerm] = useState('');
   const [profileResults, setProfileResults] = useState([]);
   const [profilePage, setProfilePage] = useState(1);
   const [totalProfilePages, setTotalProfilePages] = useState(1);
+  
+  // Constant for results per page
   const RESULTS_PER_PAGE = 20;
 
+  // Function to fetch profiles from PocketBase
   const fetchProfiles = async () => {
     try {
       const response = await pb.collection('profiles').getList(profilePage, RESULTS_PER_PAGE, {
@@ -38,6 +46,7 @@ const ProfilesPage = () => {
     }
   };
 
+  // Function to handle search action
   const handleSearch = async () => {
     if (!searchTerm) {
       fetchProfiles();
@@ -69,6 +78,7 @@ const ProfilesPage = () => {
     }
   };
 
+  // Effect hook to fetch profiles on component mount and when search term or page changes
   useEffect(() => {
     if (searchTerm) {
       handleSearch();
@@ -77,12 +87,14 @@ const ProfilesPage = () => {
     }
   }, [profilePage, searchTerm]);
 
+  // Handler for Enter key press in search input
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
       handleSearch();
     }
   };
 
+  // Function to handle pagination
   const handlePageChange = (direction) => {
     setProfilePage(prev => Math.max(1, prev + direction));
   };

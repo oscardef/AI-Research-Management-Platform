@@ -6,13 +6,21 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { pb } from '../services/pocketbaseClient';
 import ResearchProjectResult from '../components/SearchResult/ResearchProjectResult';
 
+/**
+ * ResearchProjectsPage component for displaying and searching research projects.
+ * This component provides a search bar and paginated results for research projects.
+ */
 const ResearchProjectsPage = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [researchProjectResults, setResearchProjectResults] = useState([]);
-  const [researchProjectPage, setResearchProjectPage] = useState(1);
-  const [totalResearchProjectPages, setTotalResearchProjectPages] = useState(1);
-  const RESULTS_PER_PAGE = 20;
+  const [searchTerm, setSearchTerm] = useState(''); // State to hold the current search term
+  const [researchProjectResults, setResearchProjectResults] = useState([]); // State to hold the search results for research projects
+  const [researchProjectPage, setResearchProjectPage] = useState(1); // State to manage the current page of results
+  const [totalResearchProjectPages, setTotalResearchProjectPages] = useState(1); // State to hold the total number of result pages
+  const RESULTS_PER_PAGE = 20; // Constant defining the number of results per page
 
+  /**
+   * Fetches the list of research projects from the server.
+   * Expands the collaborators associated with each project for detailed display.
+   */
   const fetchResearchProjects = async () => {
     try {
       const response = await pb.collection('research_projects').getList(researchProjectPage, RESULTS_PER_PAGE, {
@@ -31,6 +39,11 @@ const ResearchProjectsPage = () => {
     }
   };
 
+  /**
+   * Handles search functionality based on the search term.
+   * If no search term is provided, fetches all research projects.
+   * Otherwise, filters projects by the search term.
+   */
   const handleSearch = async () => {
     if (!searchTerm) {
       fetchResearchProjects();
@@ -55,6 +68,7 @@ const ResearchProjectsPage = () => {
     }
   };
 
+  // Effect hook to fetch projects when the page number or search term changes
   useEffect(() => {
     if (searchTerm) {
       handleSearch();
@@ -63,12 +77,20 @@ const ResearchProjectsPage = () => {
     }
   }, [researchProjectPage, searchTerm]);
 
+  /**
+   * Handles the Enter key press to trigger the search.
+   * @param {object} event - The keypress event object.
+   */
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
       handleSearch();
     }
   };
 
+  /**
+   * Handles pagination for the project results.
+   * @param {number} direction - The direction to change the page (-1 for previous, 1 for next).
+   */
   const handlePageChange = (direction) => {
     setResearchProjectPage(prev => Math.max(1, prev + direction));
   };
