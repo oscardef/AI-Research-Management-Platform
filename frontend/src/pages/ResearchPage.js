@@ -1,145 +1,168 @@
-// ResearchPage.js
-import React, { useState } from 'react';
-import {
-  Box, Grid, Typography, TextField, IconButton, Dialog, DialogActions,
-  DialogContent, DialogTitle, List, ListItem, ListItemText, Button
-} from '@mui/material';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Box, Grid, Typography, TextField, Button, Card, CardContent, CardActions, Divider } from '@mui/material';
+import { useParams, useNavigate } from 'react-router-dom';
+import { pb } from '../services/pocketbaseClient';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import AddIcon from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search';
-import DeleteIcon from '@mui/icons-material/Delete';
-import axios from 'axios';
+import CancelIcon from '@mui/icons-material/Cancel';
 import useProject from '../hooks/useProject';
-import RelatedProjects from '../components/ResearchProject/RelatedComponents/RelatedProjects';
-import RelatedModels from '../components/ResearchProject/RelatedComponents/RelatedModels';
-import RelatedPublications from '../components/ResearchProject/RelatedComponents/RelatedPublications';
-import { supabase } from '../services/supabaseClient';
+import SearchModal from '../components/Common/SearchModal';
+import { ProjectDescription, ProjectDetails } from '../components/ProjectDetails';
+import ProjectCollaborators from '../components/ProjectCollaborators';
+import RelatedItems from '../components/RelatedItems';
 
+/**
+ * ResearchPage component for displaying and editing research project details.
+ * It handles the presentation and modification of project data, including related items and collaborators.
+ */
 const ResearchPage = () => {
-  const { projectId } = useParams();
-  const {
-    project, loading, relatedProjects, relatedModels, relatedPublications,
-    setProject, setRelatedProjects, setRelatedModels, setRelatedPublications
-  } = useProject(projectId);
-  const [editing, setEditing] = useState({
-    title: false,
-    description: false,
-  });
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchType, setSearchType] = useState('');
+  const { projectId } = useParams(); // Extract projectId from URL parameters
+  const { project, loading, relatedProjects, relatedModels, relatedPublications, collaborators, setProject, fetchProject } = useProject(projectId);
+  const [editing, setEditing] = useState(false); // State to toggle edit mode
+  const [tempProject, setTempProject] = useState({}); // Temporary state for project changes
+  const [originalProject, setOriginalProject] = useState({}); // State to hold the original project data
+  const [modalOpen, setModalOpen] = useState(false); // State to control the open/close status of the search modal
+  const [modalType, setModalType] = useState(''); // State to specify the type of items in the search modal
+  const navigate = useNavigate(); // Navigation hook for routing
 
-  const handleSearch = async () => {
-    if (!searchTerm) return;
-
-    let searchQuery;
-    if (searchType === 'project') {
-      searchQuery = supabase
-        .from('research_projects')
-        .select('*')
-        .ilike('title', `%${searchTerm}%`)
-        .neq('id', projectId)
-        .not('id', 'in', `(${relatedProjects.map(proj => proj.id).join(',')})`);
-    } else if (searchType === 'model') {
-      searchQuery = supabase
-        .from('models')
-        .select('*')
-        .ilike('name', `%${searchTerm}%`)
-        .not('id', 'in', `(${relatedModels.map(model => model.id).join(',')})`);
-    } else if (searchType === 'publication') {
-      const response = await axios.get(`https://api.crossref.org/works?query=${searchTerm}`);
-      searchQuery = response.data.message.items.map(item => ({
-        id: item.DOI,
-        title: item.title[0],
-        description: item['container-title'] ? item['container-title'][0] : 'No description',
-        link: item.URL
-      }));
-      setSearchResults(searchQuery);
-      return;
+  useEffect(() => {
+    if (!editing) {
+      setTempProject({ ...project });
+      setOriginalProject({ ...project });
     }
+  }, [editing, project]);
 
-    const { data, error } = await searchQuery;
-    if (error) {
-      console.error('Error fetching search results:', error);
-    } else {
-      setSearchResults(data);
-    }
+  // Function to toggle edit mode
+  const toggleEdit = () => setEditing(!editing);
+
+  // Function to cancel editing and reset changes
+  const handleCancel = () => {
+    setEditing(false);
+    setTempProject({ ...originalProject });
   };
 
-  const handleUpdate = async (updatedData) => {
-    console.log("Updated data:", updatedData);
-    const { data, error } = await supabase
-      .from('research_projects')
-      .update({
-        related_projects: updatedData.related_projects || relatedProjects.map(proj => proj.id),
-        related_models: updatedData.related_models || relatedModels.map(model => model.id),
-        related_publications: updatedData.related_publications || relatedPublications
-      })
-      .eq('id', project.id);
-    console.log('Update response:', data, error);
-    if (error) {
+  // Function to save changes made to the project
+  const handleSave = async () => {
+    try {
+      await pb.collection('research_projects').update(project.id, tempProject);
+      await fetchProject(project.id); // Refresh the project data
+      setEditing(false);
+      setTempProject({});
+    } catch (error) {
       console.error('Error updating project:', error);
       alert(`Error updating project: ${error.message}`);
-    } else {
-      console.log('Project updated successfully');
     }
   };
 
-  const toggleEdit = (field) => {
-    setEditing((prevState) => ({
+  // Function to handle changes in input fields
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name.includes('.')) {
+      const [field, index, key] = name.split('.');
+      setTempProject(prevState => {
+        const updatedArray = [...(prevState[field] || [])];
+        if (!updatedArray[index]) {
+          updatedArray[index] = {};
+        }
+        updatedArray[parseInt(index)][key] = value;
+        return { ...prevState, [field]: updatedArray };
+      });
+    } else {
+      setTempProject({ ...tempProject, [name]: value });
+    }
+  };
+
+  // Function to add a new detail item
+  const handleAddDetail = () => {
+    setTempProject(prevState => ({
       ...prevState,
-      [field]: !prevState[field],
+      details: [...(prevState.details || []), { key: '', value: '' }]
     }));
   };
 
-  const handleChange = (e) => {
-    setProject({ ...project, [e.target.name]: e.target.value });
+  // Function to remove a detail item
+  const handleRemoveDetail = (index) => {
+    setTempProject(prevState => {
+      const updatedDetails = prevState.details.filter((_, i) => i !== index);
+      return { ...prevState, details: updatedDetails };
+    });
   };
 
-  const handleAddRelated = async (item) => {
-    if (searchType === 'project') {
-      const updatedProjects = [...relatedProjects, { id: item.id, title: item.title, description: item.description }];
-      setRelatedProjects(updatedProjects);
-      await handleUpdate({ related_projects: updatedProjects.map(proj => proj.id) });
-    } else if (searchType === 'model') {
-      const updatedModels = [...relatedModels, { id: item.id, name: item.name, description: item.description }];
-      setRelatedModels(updatedModels);
-      await handleUpdate({ related_models: updatedModels.map(model => model.id) });
-    } else if (searchType === 'publication') {
-      const updatedPublications = [...relatedPublications, { title: item.title, link: item.link }];
-      setRelatedPublications(updatedPublications);
-      await handleUpdate({ related_publications: updatedPublications });
-    }
+  // Function to add items (e.g., related projects, models) using the modal
+  const handleAdd = (items) => {
+    setTempProject(prevState => {
+      let updatedField;
+      if (modalType === 'related_publications') {
+        updatedField = [
+          ...new Set([
+            ...(prevState[modalType] || []),
+            ...items.map(item => ({
+              title: item.title,
+              url: item.url,
+              journal: item.journal,
+              author: item.author
+            }))
+          ])
+        ];
+      } else {
+        updatedField = [...new Set([...(prevState[modalType] || []), ...items.map(item => item.id)])];
+      }
+      return { ...prevState, [modalType]: updatedField };
+    });
   };
 
-  const handleDeleteRelated = async (id, type) => {
-    if (type === 'project') {
-      const updatedProjects = relatedProjects.filter((item) => item.id !== id);
-      setRelatedProjects(updatedProjects);
-      await handleUpdate({ related_projects: updatedProjects.map(proj => proj.id) });
-    } else if (type === 'model') {
-      const updatedModels = relatedModels.filter((item) => item.id !== id);
-      setRelatedModels(updatedModels);
-      await handleUpdate({ related_models: updatedModels.map(model => model.id) });
-    } else if (type === 'publication') {
-      const updatedPublications = relatedPublications.filter((item) => item.link !== id);
-      setRelatedPublications(updatedPublications);
-      await handleUpdate({ related_publications: updatedPublications });
-    }
+  // Function to remove related items (e.g., projects, models, publications)
+  const handleRemoveRelatedItem = (type, id) => {
+    setTempProject(prevState => {
+      const updatedField = prevState[type].filter(item => {
+        if (type === 'related_publications') {
+          return item.url !== id;
+        }
+        return item !== id;
+      });
+      return { ...prevState, [type]: updatedField };
+    });
   };
 
-  const handleOpenSearch = (type) => {
-    setSearchType(type);
-    setSearchOpen(true);
+  // Function to remove a collaborator
+  const handleRemoveCollaborator = (id) => {
+    setTempProject(prevState => ({
+      ...prevState,
+      collaborators: prevState.collaborators.filter(collabId => collabId !== id)
+    }));
   };
 
-  const handleCloseSearch = () => {
-    setSearchOpen(false);
-    setSearchTerm('');
-    setSearchResults([]);
+  // Function to add a new tag
+  const handleAddTag = (tag) => {
+    setTempProject(prevState => ({
+      ...prevState,
+      tags: [...(prevState.tags || []), tag]
+    }));
+  };
+
+  // Function to remove a tag
+  const handleRemoveTag = (tag) => {
+    setTempProject(prevState => ({
+      ...prevState,
+      tags: prevState.tags.filter(t => t !== tag)
+    }));
+  };
+
+  // Function to open the search modal
+  const openModal = (type) => {
+    setModalType(type);
+    setModalOpen(true);
+  };
+
+  // Function to close the search modal
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+
+  // Function to handle navigation to other projects or models
+  const handleNavigation = async (id, type) => {
+    navigate(type === 'project' ? `/research/${id}` : `/model/${id}`);
+    await fetchProject(id); // Fetch the project data when navigating
   };
 
   if (loading) {
@@ -152,135 +175,78 @@ const ResearchPage = () => {
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Box sx={{ backgroundColor: 'grey', padding: 2 }}>
-            <Typography variant="h5" align="center" color="white">
+      <SearchModal
+        open={modalOpen}
+        onClose={closeModal}
+        onAdd={handleAdd}
+        type={modalType}
+        currentItems={tempProject[modalType] || []}
+        excludeId={projectId}
+      />
+      <Card variant="outlined" sx={{ boxShadow: 3, mb: 3 }}>
+        <CardContent>
+          <Typography variant="h4" align="center" gutterBottom>
+            {editing ? (
               <TextField
                 variant="outlined"
                 fullWidth
-                value={project.title}
+                value={tempProject.title || ''}
                 onChange={handleChange}
                 name="title"
-                disabled={!editing.title}
-                InputProps={{
-                  endAdornment: (
-                    <IconButton onClick={() => toggleEdit('title')}>
-                      {editing.title ? <SaveIcon /> : <EditIcon />}
-                    </IconButton>
-                  ),
-                }}
               />
-            </Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={9}>
+            ) : (
+              project.title
+            )}
+          </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Box sx={{ backgroundColor: 'lightblue', padding: 2 }}>
-                <Typography variant="h6">
-                  <TextField
-                    variant="outlined"
-                    fullWidth
-                    multiline
-                    value={project.description}
-                    onChange={handleChange}
-                    name="description"
-                    disabled={!editing.description}
-                    InputProps={{
-                      endAdornment: (
-                        <IconButton onClick={() => toggleEdit('description')}>
-                          {editing.description ? <SaveIcon /> : <EditIcon />}
-                        </IconButton>
-                      ),
-                    }}
-                  />
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
-              <Box sx={{ backgroundColor: 'lightblue', padding: 2 }}>
-                <Typography variant="h6">
-                  Project Details
-                  <pre>{JSON.stringify(project.details, null, 2)}</pre>
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={3}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <RelatedProjects
-                relatedProjects={relatedProjects}
-                handleDeleteRelated={handleDeleteRelated}
-                handleOpenSearch={handleOpenSearch}
+            <Grid item xs={12} md={8}>
+              <ProjectDescription project={tempProject} handleChange={handleChange} editing={editing} />
+              <ProjectDetails project={tempProject} handleChange={handleChange} editing={editing} handleAddDetail={handleAddDetail} handleRemoveDetail={handleRemoveDetail} />
+              <ProjectCollaborators
+                collaborators={collaborators}
+                project={tempProject}
+                getProfilePictureUrl={(collaborator) => collaborator.profile_picture ? `http://127.0.0.1:8090/api/files/_pb_users_auth_/${collaborator.id}/${collaborator.profile_picture}` : ''}
+                editing={editing}
+                handleRemoveCollaborator={handleRemoveCollaborator}
+                openModal={openModal}
+                navigate={navigate}
               />
             </Grid>
-            <Grid item xs={12}>
-              <RelatedModels
-                relatedModels={relatedModels}
-                handleDeleteRelated={handleDeleteRelated}
-                handleOpenSearch={handleOpenSearch}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Box sx={{ backgroundColor: 'red', padding: 2 }}>
-                <Typography variant="h6" color="white">Linked Datasets</Typography>
-                {/* Linked Datasets implementation */}
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
-              <RelatedPublications
-                relatedPublications={relatedPublications}
-                handleDeleteRelated={handleDeleteRelated}
-                handleOpenSearch={handleOpenSearch}
+            <Grid item xs={12} md={4}>
+              <RelatedItems
+                relatedProjects={tempProject.related_projects || []}
+                relatedModels={tempProject.related_models || []}
+                relatedPublications={tempProject.related_publications || []}
+                project={tempProject}
+                editing={editing}
+                handleNavigation={handleNavigation}
+                openModal={openModal}
+                handleRemoveRelatedItem={handleRemoveRelatedItem}
+                handleChange={handleChange}
+                handleAddTag={handleAddTag}
+                handleRemoveTag={handleRemoveTag}
               />
             </Grid>
           </Grid>
-        </Grid>
-      </Grid>
-
-      <Dialog open={searchOpen} onClose={handleCloseSearch}>
-        <DialogTitle>Search {searchType === 'project' ? 'Research Projects' : searchType === 'model' ? 'AI Models' : 'Publications'}</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Search"
-              fullWidth
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <IconButton onClick={handleSearch}>
-              <SearchIcon />
-            </IconButton>
-          </Box>
-          <List>
-            {searchResults.map((result) => (
-              <ListItem key={result.id || result.link}>
-                <ListItemText
-                  primary={result.title || result.name}
-                  secondary={result.description}
-                />
-                <IconButton onClick={() => handleAddRelated(result)}>
-                  <AddIcon />
-                </IconButton>
-              </ListItem>
-            ))}
-          </List>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseSearch} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Button onClick={() => handleUpdate({})} variant="contained" color="primary" sx={{ mt: 2 }}>
-        Save Changes
-      </Button>
+        </CardContent>
+        <Divider />
+        <CardActions sx={{ justifyContent: 'center', p: 2 }}>
+          {editing ? (
+            <>
+              <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={handleSave} sx={{ mr: 1 }}>
+                Save Changes
+              </Button>
+              <Button variant="contained" color="secondary" startIcon={<CancelIcon />} onClick={handleCancel}>
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <Button variant="contained" color="primary" startIcon={<EditIcon />} onClick={toggleEdit}>
+              Edit Page
+            </Button>
+          )}
+        </CardActions>
+      </Card>
     </Box>
   );
 };

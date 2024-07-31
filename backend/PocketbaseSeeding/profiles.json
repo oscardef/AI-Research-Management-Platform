@@ -1,0 +1,192 @@
+[
+    {
+        "id": "x4uqjx4o4fkqz6k",
+        "user": "e1977d8cddbf44f",
+        "institution": "Harvard University",
+        "department": "Computer Science",
+        "research_interests": [
+            "AI",
+            "Machine Learning",
+            "Healthcare"
+        ],
+        "publications": [
+            {
+                "author": "John Doe",
+                "journal": "Journal of AI Research",
+                "title": "AI in Healthcare",
+                "url": "http://dx.doi.org/10.2172/1417313"
+            }
+        ]
+    },
+    {
+        "id": "2g2k8td7u3k0ezl",
+        "user": "6b2c77f27a324c1",
+        "institution": "Stanford University",
+        "department": "Bioinformatics",
+        "research_interests": [
+            "Genomics",
+            "AI",
+            "Data Science"
+        ],
+        "publications": [
+            {
+                "author": "Jane Smith",
+                "journal": "Bioinformatics Journal",
+                "title": "AI for Genomic Data Analysis",
+                "url": "http://dx.doi.org/10.2172/1417314"
+            }
+        ]
+    },
+    {
+        "id": "vft5o3a6g8f4xir",
+        "user": "3675911d75154f6",
+        "institution": "MIT",
+        "department": "AI Lab",
+        "research_interests": [
+            "Robotics",
+            "AI",
+            "Healthcare"
+        ],
+        "publications": [
+            {
+                "author": "Alice Johnson",
+                "journal": "Robotics Journal",
+                "title": "AI in Surgical Robotics",
+                "url": "http://dx.doi.org/10.2172/1417315"
+            }
+        ]
+    },
+    {
+        "id": "uq8yj33p0h46go7",
+        "user": "d7a458ef6da644b",
+        "institution": "UC Berkeley",
+        "department": "Statistics",
+        "research_interests": [
+            "Predictive Analytics",
+            "AI",
+            "Healthcare"
+        ],
+        "publications": [
+            {
+                "author": "Bob Brown",
+                "journal": "Statistics Journal",
+                "title": "Predictive Healthcare Analytics",
+                "url": "http://dx.doi.org/10.2172/1417316"
+            }
+        ]
+    },
+    {
+        "id": "9fnwz5nke0r0x3g",
+        "user": "7a98c0a9ce3646b",
+        "institution": "University of Oxford",
+        "department": "Mathematics",
+        "research_interests": [
+            "AI",
+            "Optimization",
+            "Healthcare"
+        ],
+        "publications": [
+            {
+                "author": "Charlie Green",
+                "journal": "Mathematics Journal",
+                "title": "Optimization in Healthcare using AI",
+                "url": "http://dx.doi.org/10.2172/1417317"
+            }
+        ]
+    },
+    {
+        "id": "u54xw8dtf4h9o7s",
+        "user": "07ec32692ee7401",
+        "institution": "Cambridge University",
+        "department": "Engineering",
+        "research_interests": [
+            "AI",
+            "Medical Devices",
+            "Healthcare"
+        ],
+        "publications": [
+            {
+                "author": "Diana White",
+                "journal": "Engineering Journal",
+                "title": "AI in Medical Device Engineering",
+                "url": "http://dx.doi.org/10.2172/1417318"
+            }
+        ]
+    },
+    {
+        "id": "wn6j1lmha63r1j4",
+        "user": "986b290d790e400",
+        "institution": "University of Toronto",
+        "department": "Computer Science",
+        "research_interests": [
+            "AI",
+            "Natural Language Processing",
+            "Healthcare"
+        ],
+        "publications": [
+            {
+                "author": "Ethan Harris",
+                "journal": "NLP Journal",
+                "title": "NLP in Healthcare",
+                "url": "http://dx.doi.org/10.2172/1417319"
+            }
+        ]
+    },
+    {
+        "id": "v2oc5gekxi54sos",
+        "user": "fdb5e9d24508403",
+        "institution": "Imperial College London",
+        "department": "AI Lab",
+        "research_interests": [
+            "AI",
+            "Cybersecurity",
+            "Healthcare"
+        ],
+        "publications": [
+            {
+                "author": "Fiona Clark",
+                "journal": "Cybersecurity Journal",
+                "title": "AI for Cybersecurity in Healthcare",
+                "url": "http://dx.doi.org/10.2172/1417320"
+            }
+        ]
+    },
+    {
+        "id": "9f6e7e9t47f7o34",
+        "user": "3024e32641a742d",
+        "institution": "Carnegie Mellon University",
+        "department": "Robotics",
+        "research_interests": [
+            "AI",
+            "Autonomous Systems",
+            "Healthcare"
+        ],
+        "publications": [
+            {
+                "author": "George Lewis",
+                "journal": "Autonomous Systems Journal",
+                "title": "AI in Autonomous Healthcare Systems",
+                "url": "http://dx.doi.org/10.2172/1417321"
+            }
+        ]
+    },
+    {
+        "id": "e9mox5n14bw5y83",
+        "user": "730bca63e55b4d0",
+        "institution": "ETH Zurich",
+        "department": "AI and Robotics",
+        "research_interests": [
+            "AI",
+            "Robotics",
+            "Healthcare"
+        ],
+        "publications": [
+            {
+                "author": "Hannah Walker",
+                "journal": "Journal of AI and Robotics",
+                "title": "Robotics in Healthcare",
+                "url": "http://dx.doi.org/10.2172/1417322"
+            }
+        ]
+    }
+]

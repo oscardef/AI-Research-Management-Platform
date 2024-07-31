@@ -1,0 +1,82 @@
+[
+    {
+        "id": "e1977d8cddbf44f",
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": ""
+    },
+    {
+        "id": "6b2c77f27a324c1",
+        "name": "Jane Smith",
+        "email": "jane.smith@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": ""
+    },
+    {
+        "id": "3675911d75154f6",
+        "name": "Alice Johnson",
+        "email": "alice.johnson@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": ""
+    },
+    {
+        "id": "d7a458ef6da644b",
+        "name": "Bob Brown",
+        "email": "bob.brown@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": ""
+    },
+    {
+        "id": "7a98c0a9ce3646b",
+        "name": "Charlie Green",
+        "email": "charlie.green@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": ""
+    },
+    {
+        "id": "07ec32692ee7401",
+        "name": "Diana White",
+        "email": "diana.white@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": ""
+    },
+    {
+        "id": "986b290d790e400",
+        "name": "Ethan Harris",
+        "email": "ethan.harris@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": ""
+    },
+    {
+        "id": "fdb5e9d24508403",
+        "name": "Fiona Clark",
+        "email": "fiona.clark@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": ""
+    },
+    {
+        "id": "3024e32641a742d",
+        "name": "George Lewis",
+        "email": "george.lewis@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": ""
+    },
+    {
+        "id": "730bca63e55b4d0",
+        "name": "Hannah Walker",
+        "email": "hannah.walker@example.com",
+        "password": "password123",
+        "passwordConfirm": "password123",
+        "profile_picture": ""
+    }
+]
