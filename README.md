@@ -8,7 +8,7 @@ LLACE is named in honor of Ada Lovelace, a pioneer in computing. The platform su
 
 ## Demo Video
 
-For a detailed walkthrough of the platform's features and capabilities, please watch the [LLACE Demo Video]({https://youtu.be/IAQFAHJF15w). This video provides an overview of key functionalities, including user account management, project and model handling, and advanced search capabilities.
+For a detailed walkthrough of the platform's features and capabilities, please watch the [LLACE Demo Video](https://youtu.be/IAQFAHJF15w). This video provides an overview of key functionalities, including user account management, project and model handling, and advanced search capabilities.
 
 ## Features
 
